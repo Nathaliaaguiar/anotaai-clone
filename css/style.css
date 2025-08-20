@@ -486,3 +486,14 @@ footer {
     color: #8e44ad; 
     font-weight: bold; 
 } /* Roxo para destaque */
+
+
+/* --- Estilos Adicionais para o Gráfico do Dashboard --- */
+.grafico-container {
+    background-color: var(--cor-superficie, #fff);
+    padding: 2rem;
+    border-radius: var(--borda-radius, 8px);
+    box-shadow: var(--sombra-suave, 0 4px 12px rgba(0,0,0,0.08));
+    margin-top: 2.5rem;
+    height: 400px; /* Define uma altura fixa para o gráfico */
+}
