@@ -1,0 +1,299 @@
+/* Reset Básico e Fontes */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f4f4f4;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+    overflow: hidden;
+    padding: 0 20px;
+}
+
+/* Header */
+header {
+    background: #fff;
+    color: #333;
+    padding: 1rem 0;
+    border-bottom: 1px solid #ddd;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #e67e22;
+    text-decoration: none;
+}
+
+header nav ul {
+    list-style: none;
+    display: flex;
+}
+
+header nav ul li {
+    margin-left: 20px;
+}
+
+header nav a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+header nav a:hover {
+    color: #e67e22;
+}
+
+/* Main Content */
+main {
+    padding: 2rem 0;
+}
+
+h1, h2 {
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+/* Botões */
+.btn, button {
+    display: inline-block;
+    background: #e67e22;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background 0.3s ease;
+}
+
+.btn:hover, button:hover {
+    background: #d35400;
+}
+
+/* Catálogo de Produtos */
+.produtos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.produto-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.produto-card img {
+    max-width: 100%;
+    height: 150px;
+    object-fit: cover;
+    margin-bottom: 15px;
+}
+
+.produto-card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.produto-card p {
+    flex-grow: 1;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.produto-card .preco {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #27ae60;
+    margin-bottom: 15px;
+}
+
+/* Formulários */
+.form-group {
+    margin-bottom: 1rem;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+.form-group input, .form-group textarea, .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+.auth-container {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+}
+.form-wrapper {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 5px;
+    width: 100%;
+    max-width: 400px;
+}
+
+/* Tabela */
+.tabela-carrinho, .tabela-admin, .tabela-pedidos {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: #fff;
+}
+.tabela-carrinho th, .tabela-carrinho td,
+.tabela-admin th, .tabela-admin td,
+.tabela-pedidos th, .tabela-pedidos td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+.tabela-carrinho th, .tabela-admin th, .tabela-pedidos th {
+    background-color: #f2f2f2;
+}
+
+/* Status do Pedido */
+.status-pendente { color: #e67e22; font-weight: bold; }
+.status-preparando { color: #3498db; font-weight: bold; }
+.status-a_caminho { color: #f1c40f; font-weight: bold; }
+.status-entregue { color: #2ecc71; font-weight: bold; }
+
+/* Admin */
+.admin-header {
+    background: #2c3e50;
+}
+.admin-header .logo { color: #fff; }
+.admin-header nav a { color: #ecf0f1; }
+.admin-header nav a:hover { color: #e67e22; }
+
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.login-container {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 5px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+.stat-card {
+    background: #fff;
+    padding: 2rem;
+    text-align: center;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+.stat-card p {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #e67e22;
+}
+.admin-crud .form-wrapper {
+    max-width: 100%;
+    margin-bottom: 2rem;
+}
+.form-status {
+    display: flex;
+    gap: 5px;
+}
+.form-status select {
+    padding: 5px;
+    border-radius: 3px;
+}
+.form-status button {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+}
+.btn-remover { background-color: #e74c3c; }
+.btn-remover:hover { background-color: #c0392b; }
+.btn-edit { background-color: #3498db; }
+.btn-edit:hover { background-color: #2980b9; }
+
+/* Mensagens */
+.error {
+    background: #e74c3c;
+    color: #fff;
+    padding: 10px;
+    margin-bottom: 1rem;
+    border-radius: 5px;
+}
+.success {
+    background: #2ecc71;
+    color: #fff;
+    padding: 10px;
+    margin-bottom: 1rem;
+    border-radius: 5px;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 2rem 0;
+    margin-top: 2rem;
+    background: #333;
+    color: #fff;
+}
+/* Estilo para a logo da loja no site do cliente */
+.store-logo-img {
+    max-height: 80px; /* Ajuste a altura conforme preferir */
+    width: auto;
+    vertical-align: middle;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    header .container {
+        flex-direction: column;
+    }
+    header nav ul {
+        margin-top: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    header nav ul li {
+        margin: 5px 10px;
+    }
+    .auth-container {
+        flex-direction: column;
+    }
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
