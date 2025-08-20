@@ -2,7 +2,6 @@
 require_once 'includes/header.php';
 require_once 'includes/auth_check.php';
 
-// Lógica para atualizar status
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mudar_status'])) {
     $pedido_id = $_POST['pedido_id'];
     $status = $_POST['status'];
@@ -12,9 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mudar_status'])) {
     exit;
 }
 
-// Listar todos os pedidos
 $pedidos = $pdo->query("
-    SELECT p.id, p.data, p.total, p.status, u.nome as cliente_nome 
+    SELECT p.id, p.data, p.total, p.status, p.metodo_pagamento, p.troco_para, u.nome as cliente_nome 
     FROM pedidos p 
     JOIN usuarios u ON p.usuario_id = u.id 
     ORDER BY p.data DESC
@@ -30,6 +28,7 @@ $pedidos = $pdo->query("
                 <th>Cliente</th>
                 <th>Data</th>
                 <th>Total</th>
+                <th>Pagamento</th>
                 <th>Status</th>
                 <th>Ação</th>
             </tr>
@@ -41,11 +40,18 @@ $pedidos = $pdo->query("
                     <td><?php echo htmlspecialchars($pedido['cliente_nome']); ?></td>
                     <td><?php echo date('d/m/Y H:i', strtotime($pedido['data'])); ?></td>
                     <td>R$ <?php echo number_format($pedido['total'], 2, ',', '.'); ?></td>
-                    <td><span class="status-<?php echo $pedido['status']; ?>"><?php echo ucfirst($pedido['status']); ?></span></td>
+                    <td>
+                        <strong><?php echo ucfirst($pedido['metodo_pagamento']); ?></strong>
+                        <?php if ($pedido['metodo_pagamento'] == 'dinheiro' && !empty($pedido['troco_para'])): ?>
+                            <br><small>Troco p/ R$ <?php echo number_format($pedido['troco_para'], 2, ',', '.'); ?></small>
+                        <?php endif; ?>
+                    </td>
+                    <td><span class="status-<?php echo str_replace(' ', '_', $pedido['status']); ?>"><?php echo ucwords(str_replace('_', ' ', $pedido['status'])); ?></span></td>
                     <td>
                         <form action="pedidos.php" method="POST" class="form-status">
                             <input type="hidden" name="pedido_id" value="<?php echo $pedido['id']; ?>">
                             <select name="status">
+                                <option value="aguardando_pagamento" <?php if($pedido['status'] == 'aguardando_pagamento') echo 'selected'; ?>>Aguardando Pagamento</option>
                                 <option value="pendente" <?php if($pedido['status'] == 'pendente') echo 'selected'; ?>>Pendente</option>
                                 <option value="preparando" <?php if($pedido['status'] == 'preparando') echo 'selected'; ?>>Preparando</option>
                                 <option value="a caminho" <?php if($pedido['status'] == 'a caminho') echo 'selected'; ?>>A Caminho</option>

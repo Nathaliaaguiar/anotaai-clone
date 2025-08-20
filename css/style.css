@@ -336,3 +336,153 @@ footer {
         grid-template-columns: 1fr;
     }
 }
+
+/* --- Estilos Adicionais para a Seleção de Forma de Pagamento --- */
+
+/* Estiliza o container da opção (o label) */
+.radio-label {
+    display: block;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    position: relative; /* Essencial para os pseudo-elementos */
+    padding-left: 45px; /* Espaço para o nosso círculo customizado */
+    transition: all 0.3s ease;
+}
+
+/* Um leve destaque ao passar o mouse */
+.radio-label:hover {
+    border-color: #aaa;
+    background-color: #f9f9f9;
+}
+
+/* Esconde o botão de rádio original do navegador */
+.radio-label input[type="radio"] {
+    display: none;
+}
+
+/* Cria o círculo exterior do nosso botão de rádio customizado */
+.radio-label::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+/* Cria o círculo interior (a bolinha que indica a seleção) */
+.radio-label::after {
+    content: '';
+    position: absolute;
+    left: 20px; /* Centralizado dentro do círculo exterior */
+    top: 50%;
+    transform: translateY(-50%) scale(0); /* Começa invisível/encolhido */
+    width: 10px;
+    height: 10px;
+    background-color: #e67e22; /* Cor laranja do seu tema original */
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+/* --- Estilos para a opção SELECIONADA (controlado via JavaScript) --- */
+
+/* Quando o label tem a classe 'selected' */
+.radio-label.selected {
+    border-color: #e67e22;
+    background-color: #fef5e7; /* Um fundo laranja bem claro */
+}
+
+.radio-label.selected::before {
+    border-color: #e67e22; /* A borda do círculo fica laranja */
+}
+
+.radio-label.selected::after {
+    transform: translateY(-50%) scale(1); /* Mostra a bolinha interior */
+}
+
+/* Estilo para o campo de troco */
+#campo-troco {
+    border-left: 3px solid #e67e22;
+    padding-left: 15px;
+    margin-top: 15px;
+}
+/* --- Estilos Adicionais para a Página de Pagamento PIX --- */
+.pagina-pagamento {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.pagamento-box {
+    background-color: var(--cor-superficie, #fff);
+    padding: 2rem;
+    border-radius: var(--borda-radius, 8px);
+    box-shadow: var(--sombra-suave, 0 4px 12px rgba(0,0,0,0.08));
+    border: 1px solid var(--cor-borda, #dee2e6);
+}
+
+.total-a-pagar {
+    background-color: var(--cor-fundo, #f8f9fa);
+    padding: 1rem;
+    border-radius: var(--borda-radius, 8px);
+    margin: 1.5rem 0;
+    font-size: 1.2rem;
+}
+.total-a-pagar strong {
+    font-size: 1.8rem;
+    color: var(--cor-sucesso, #28a745);
+    display: block;
+}
+
+.pix-container {
+    margin-top: 2rem;
+}
+
+.qr-code-img {
+    margin: 1rem 0;
+    border: 5px solid var(--cor-superficie, #fff);
+    box-shadow: var(--sombra-suave, 0 4px 12px rgba(0,0,0,0.08));
+}
+
+.copia-e-cola-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 1rem;
+}
+
+.copia-e-cola-wrapper textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.9rem;
+    resize: none;
+    text-align: center;
+    background-color: var(--cor-fundo, #f8f9fa);
+    border: 1px dashed var(--cor-borda, #dee2e6);
+}
+
+.aviso-pagamento {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--cor-borda, #dee2e6);
+    font-size: 0.9rem;
+    color: var(--cor-texto, #555);
+}
+.link-discreto {
+    display: inline-block;
+    margin-top: 10px;
+    color: var(--cor-texto, #555);
+    text-decoration: underline;
+}
+/* Adicione esta linha junto com os outros estilos de status */
+.status-aguardando_pagamento { 
+    color: #8e44ad; 
+    font-weight: bold; 
+} /* Roxo para destaque */

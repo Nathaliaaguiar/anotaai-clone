@@ -53,3 +53,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+
+
+// --- CÓDIGO DE PAGAMENTO ATUALIZADO ---
+    const metodosPagamentoRadios = document.querySelectorAll('input[name="metodo_pagamento"]');
+    const campoTroco = document.getElementById('campo-troco');
+    const inputTroco = document.getElementById('troco_para');
+    
+    // Pega todos os labels para poder adicionar/remover a classe de estilo
+    const labelsPagamento = document.querySelectorAll('.radio-label');
+
+    if (metodosPagamentoRadios.length > 0) {
+        metodosPagamentoRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Primeiro, remove a classe 'selected' de todos os labels
+                labelsPagamento.forEach(label => {
+                    label.classList.remove('selected');
+                });
+                
+                // Adiciona a classe 'selected' apenas no label do radio que foi clicado
+                if (this.checked) {
+                    this.parentElement.classList.add('selected');
+                }
+
+                // Lógica para mostrar/esconder o campo de troco
+                if (this.value === 'dinheiro') {
+                    campoTroco.style.display = 'block';
+                    inputTroco.required = true;
+                } else {
+                    campoTroco.style.display = 'none';
+                    inputTroco.required = false;
+                    inputTroco.value = ''; 
+                }
+            });
+        });
+    }
