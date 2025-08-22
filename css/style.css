@@ -1045,3 +1045,96 @@ input:checked + .slider:before { transform: translateX(26px); }
     font-weight: normal;
     color: #555;
 }
+/* --- Estilos para Resumo do Pedido --- */
+.resumo-pedido {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    margin-bottom: 2rem;
+}
+.resumo-pedido h3 {
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+}
+.resumo-pedido ul {
+    list-style: none;
+    padding: 0;
+}
+.resumo-pedido li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+}
+.resumo-pedido li.total {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #27ae60;
+    border-top: 1px solid #eee;
+    margin-top: 10px;
+}
+/* --- Estilos para a Página de Perfil --- */
+.perfil-container {
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* Coluna do formulário menor que a dos pedidos */
+    gap: 30px;
+}
+@media (max-width: 900px) {
+    .perfil-container {
+        grid-template-columns: 1fr; /* Empilha em telas menores */
+    }
+}
+.perfil-form, .meus-pedidos {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* --- Estilos para o Histórico de Pedidos do Cliente --- */
+.lista-pedidos {
+    margin-top: 1rem;
+}
+.pedido-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Sombra mais sutil */
+}
+.pedido-header, .pedido-footer {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.pedido-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+}
+.pedido-footer {
+    border-top: 1px solid #eee;
+}
+.pedido-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.pedido-body li {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    flex-wrap: wrap; /* Permite que a observação quebre a linha */
+}
+.pedido-body li:last-child {
+    border-bottom: none;
+}
+.observacao-item {
+    width: 100%;
+    margin-top: 5px;
+    color: #777;
+    font-size: 0.9em;
+}

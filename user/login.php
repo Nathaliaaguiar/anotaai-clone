@@ -1,5 +1,4 @@
 <?php
-// O include do header já inicia a sessão e conecta ao DB
 require_once __DIR__ . '/../includes/header.php';
 
 // Lógica de Login
@@ -21,80 +20,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     }
 }
 
-// Lógica de Cadastro
+// Lógica de Cadastro (COM CAMPO BAIRRO)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
     $nome = $_POST['nome'];
     $email = $_POST['email'];
     $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
     $endereco = $_POST['endereco'];
+    $bairro = trim($_POST['bairro']); // Novo campo
     $telefone = $_POST['telefone'];
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO usuarios (nome, email, senha, endereco, telefone) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$nome, $email, $senha, $endereco, $telefone]);
-        // Auto-login após cadastro
+        $stmt = $pdo->prepare("INSERT INTO usuarios (nome, email, senha, endereco, bairro, telefone) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$nome, $email, $senha, $endereco, $bairro, $telefone]);
+        
         $_SESSION['usuario_id'] = $pdo->lastInsertId();
         $_SESSION['usuario_nome'] = $nome;
-        header("Location: index.php");
+        header("Location: index.php?cadastro_ok=1");
         exit();
     } catch (PDOException $e) {
-        if ($e->errorInfo[1] == 1062) { // Código de erro para entrada duplicada
+        if ($e->errorInfo[1] == 1062) {
             $erro_cadastro = "Este e-mail já está cadastrado.";
         } else {
-            $erro_cadastro = "Erro ao cadastrar. Tente novamente.";
+            $erro_cadastro = "Erro ao cadastrar: " . $e->getMessage();
         }
     }
 }
 ?>
-
 <div class="auth-container">
     <div class="form-wrapper">
         <h2>Entrar</h2>
-        <?php if (isset($erro_login)): ?>
-            <p class="error"><?php echo $erro_login; ?></p>
-        <?php endif; ?>
+        <?php if (isset($erro_login)): ?><p class="error"><?php echo $erro_login; ?></p><?php endif; ?>
         <form action="login.php" method="POST">
-            <div class="form-group">
-                <label for="email">E-mail</label>
-                <input type="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="senha">Senha</label>
-                <input type="password" name="senha" required>
-            </div>
+            <div class="form-group"><label>E-mail</label><input type="email" name="email" required></div>
+            <div class="form-group"><label>Senha</label><input type="password" name="senha" required></div>
             <button type="submit" name="login" class="btn">Entrar</button>
         </form>
     </div>
 
     <div class="form-wrapper">
         <h2>Criar Conta</h2>
-        <?php if (isset($erro_cadastro)): ?>
-            <p class="error"><?php echo $erro_cadastro; ?></p>
-        <?php endif; ?>
+        <?php if (isset($erro_cadastro)): ?><p class="error"><?php echo $erro_cadastro; ?></p><?php endif; ?>
         <form action="login.php" method="POST">
-            <div class="form-group">
-                <label for="nome">Nome Completo</label>
-                <input type="text" name="nome" required>
-            </div>
-            <div class="form-group">
-                <label for="email">E-mail</label>
-                <input type="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="senha">Senha</label>
-                <input type="password" name="senha" required>
-            </div>
-             <div class="form-group">
-                <label for="telefone">Telefone</label>
-                <input type="tel" name="telefone" required>
-            </div>
-            <div class="form-group">
-                <label for="endereco">Endereço (Rua, N°, Bairro)</label>
-                <textarea name="endereco" rows="3" required></textarea>
-            </div>
+            <div class="form-group"><label>Nome Completo</label><input type="text" name="nome" required></div>
+            <div class="form-group"><label>E-mail</label><input type="email" name="email" required></div>
+            <div class="form-group"><label>Senha</label><input type="password" name="senha" required></div>
+            <div class="form-group"><label>Telefone</label><input type="tel" name="telefone" required></div>
+            <div class="form-group"><label>Endereço (Rua, N°)</label><input type="text" name="endereco" required></div>
+            <div class="form-group"><label>Bairro</label><input type="text" name="bairro" required></div>
             <button type="submit" name="cadastro" class="btn">Cadastrar</button>
         </form>
     </div>
 </div>
-
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

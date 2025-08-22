@@ -30,6 +30,7 @@ require_once __DIR__ . '/../../config/db.php';
                     <li><a href="categorias.php">Categorias</a></li>
                     <li><a href="pedidos.php">Pedidos</a></li>
                     <li><a href="clientes.php">Clientes</a></li>
+                    <li><a href="entregas.php">Entregas</a>
                     <li><a href="horarios.php">Horários</a></li>
                     <li><a href="logout.php">Sair</a></li>
                 </ul>
