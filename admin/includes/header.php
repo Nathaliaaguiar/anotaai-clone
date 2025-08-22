@@ -27,8 +27,10 @@ require_once __DIR__ . '/../../config/db.php';
                 <ul>
                     <li><a href="dashboard.php">Dashboard</a></li>
                     <li><a href="produtos.php">Produtos</a></li>
+                    <li><a href="categorias.php">Categorias</a></li>
                     <li><a href="pedidos.php">Pedidos</a></li>
                     <li><a href="clientes.php">Clientes</a></li>
+                    <li><a href="horarios.php">Horários</a></li>
                     <li><a href="logout.php">Sair</a></li>
                 </ul>
             </nav>

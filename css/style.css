@@ -241,10 +241,47 @@ h1, h2 {
     padding: 5px 10px;
     font-size: 0.9rem;
 }
-.btn-remover { background-color: #e74c3c; }
-.btn-remover:hover { background-color: #c0392b; }
-.btn-edit { background-color: #3498db; }
-.btn-edit:hover { background-color: #2980b9; }
+/* --- Estilos para Botões de Ação em Tabelas (Editar/Excluir) --- */
+
+/* Estilo comum para ambos os botões */
+.btn-edit,
+.btn-remover {
+    display: inline-block;
+    padding: 6px 12px; /* Menor que os botões principais */
+    margin: 2px; /* Pequeno espaçamento entre eles */
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.85rem; /* Fonte um pouco menor */
+    font-weight: bold;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+/* Efeito de clique/hover sutil */
+.btn-edit:hover,
+.btn-remover:hover {
+    transform: translateY(-1px); /* Leve subida ao passar o mouse */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Cor específica para o botão EDITAR (Azul) */
+.btn-edit {
+    background-color: #3498db;
+}
+.btn-edit:hover {
+    background-color: #2980b9;
+}
+
+/* Cor específica para o botão REMOVER (Vermelho) */
+.btn-remover {
+    background-color: #e74c3c;
+}
+.btn-remover:hover {
+    background-color: #c0392b;
+}
 
 /* Mensagens */
 .error {
@@ -844,4 +881,103 @@ html[class*="tema-"] .admin-main h1,
 html[class*="tema-"] .admin-main h2 {
     color: var(--admin-heading);
 }
-/* ... o resto das regras do tema continua igual ... */
+/* --- Estilos para Seção de Categorias --- */
+.categoria-secao {
+    margin-bottom: 3rem;
+}
+
+.categoria-titulo {
+    font-size: 2rem;
+    padding-bottom: 10px;
+    margin-bottom: 2rem;
+    border-bottom: 3px solid #e67e22;
+    display: inline-block;
+}
+/* --- Estilos para Filtro e Seções de Categorias --- */
+
+/* Ativa a rolagem suave na página inteira */
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 100px; /* Evita que o header fixo cubra o título da seção */
+}
+
+/* Barra de Filtro */
+.filtro-categorias {
+    margin-bottom: 3rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.filtro-categorias ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap; /* Permite que os botões quebrem a linha em telas pequenas */
+    gap: 15px; /* Espaçamento entre os botões */
+}
+
+/* Botões de Filtro */
+.btn-filtro {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #f0f0f0;
+    color: #555;
+    border-radius: 50px; /* Deixa os botões arredondados */
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.btn-filtro:hover {
+    background-color: #e67e22;
+    color: #fff;
+    border-color: #e67e22;
+    transform: translateY(-2px);
+}
+
+/* Título da Seção de Categoria */
+.categoria-secao {
+    padding-top: 1.5rem; /* Espaçamento para a âncora não ficar colada no topo */
+}
+
+.categoria-titulo {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+/* --- Estilos Adicionais para Horário de Funcionamento --- */
+
+/* Tabela de horários no painel admin */
+.tabela-horarios td {
+    vertical-align: middle;
+}
+
+/* Estilo do botão toggle (switch) */
+.switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; }
+.slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; }
+input:checked + .slider { background-color: #2ecc71; }
+input:focus + .slider { box-shadow: 0 0 1px #2ecc71; }
+input:checked + .slider:before { transform: translateX(26px); }
+.slider.round { border-radius: 34px; }
+.slider.round:before { border-radius: 50%; }
+
+
+/* Indicador de status da loja para o cliente */
+.status-loja {
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #fff;
+}
+.status-loja.status-aberto {
+    background-color: #2ecc71; /* Verde */
+}
+.status-loja.status-fechado {
+    background-color: #e74c3c; /* Vermelho */
+}

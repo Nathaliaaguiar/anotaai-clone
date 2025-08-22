@@ -21,11 +21,26 @@
                     </ul>
                 </div>
 
-                <div class="footer-section social">
-                    <h4>Siga-nos</h4>
-                    <a href="#" class="social-icon"><i class="fab fa-facebook"></i> Facebook</a>
-                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i> Instagram</a>
-                    <a href="#" class="social-icon"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                <div class="footer-section horarios">
+                    <h4>Horário de Funcionamento</h4>
+                    <?php
+                        // Busca os horários do banco
+                        $stmt_horarios = $pdo->query("SELECT * FROM horarios_funcionamento ORDER BY dia_semana ASC");
+                        $horarios = $stmt_horarios->fetchAll();
+                        $dias_semana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+                    ?>
+                    <ul class="lista-horarios">
+                        <?php foreach ($horarios as $horario): ?>
+                            <li>
+                                <span class="dia"><?php echo $dias_semana[$horario['dia_semana']]; ?></span>
+                                <?php if ($horario['ativo']): ?>
+                                    <span class="hora"><?php echo date('H:i', strtotime($horario['horario_abertura'])) . ' - ' . date('H:i', strtotime($horario['horario_fechamento'])); ?></span>
+                                <?php else: ?>
+                                    <span class="hora fechado">Fechado</span>
+                                <?php endif; ?>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
                 </div>
 
             </div>
