@@ -2,21 +2,25 @@
 require_once 'includes/header.php';
 require_once 'includes/auth_check.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mudar_status'])) {
+// Atualiza o status de um pedido
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pedido_id'])) {
     $pedido_id = $_POST['pedido_id'];
     $status = $_POST['status'];
     $stmt = $pdo->prepare("UPDATE pedidos SET status = ? WHERE id = ?");
     $stmt->execute([$status, $pedido_id]);
-    header('Location: pedidos.php');
+    header("Location: pedidos.php");
     exit;
 }
 
+// Busca todos os pedidos com o nome do cliente
 $pedidos = $pdo->query("
-    SELECT p.id, p.data, p.total, p.status, p.metodo_pagamento, p.troco_para, u.nome as cliente_nome 
+    SELECT p.*, u.nome as cliente_nome 
     FROM pedidos p 
     JOIN usuarios u ON p.usuario_id = u.id 
     ORDER BY p.data DESC
 ")->fetchAll();
+
+$status_options = ['pendente', 'preparando', 'a_caminho', 'entregue', 'cancelado'];
 ?>
 
 <section class="admin-crud">
@@ -26,11 +30,10 @@ $pedidos = $pdo->query("
             <tr>
                 <th>ID</th>
                 <th>Cliente</th>
-                <th>Data</th>
                 <th>Total</th>
-                <th>Pagamento</th>
+                <th>Data</th>
                 <th>Status</th>
-                <th>Ação</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -38,27 +41,23 @@ $pedidos = $pdo->query("
                 <tr>
                     <td>#<?php echo $pedido['id']; ?></td>
                     <td><?php echo htmlspecialchars($pedido['cliente_nome']); ?></td>
-                    <td><?php echo date('d/m/Y H:i', strtotime($pedido['data'])); ?></td>
                     <td>R$ <?php echo number_format($pedido['total'], 2, ',', '.'); ?></td>
-                    <td>
-                        <strong><?php echo ucfirst($pedido['metodo_pagamento']); ?></strong>
-                        <?php if ($pedido['metodo_pagamento'] == 'dinheiro' && !empty($pedido['troco_para'])): ?>
-                            <br><small>Troco p/ R$ <?php echo number_format($pedido['troco_para'], 2, ',', '.'); ?></small>
-                        <?php endif; ?>
-                    </td>
-                    <td><span class="status-<?php echo str_replace(' ', '_', $pedido['status']); ?>"><?php echo ucwords(str_replace('_', ' ', $pedido['status'])); ?></span></td>
+                    <td><?php echo date('d/m/Y H:i', strtotime($pedido['data'])); ?></td>
                     <td>
                         <form action="pedidos.php" method="POST" class="form-status">
                             <input type="hidden" name="pedido_id" value="<?php echo $pedido['id']; ?>">
                             <select name="status">
-                                <option value="aguardando_pagamento" <?php if($pedido['status'] == 'aguardando_pagamento') echo 'selected'; ?>>Aguardando Pagamento</option>
-                                <option value="pendente" <?php if($pedido['status'] == 'pendente') echo 'selected'; ?>>Pendente</option>
-                                <option value="preparando" <?php if($pedido['status'] == 'preparando') echo 'selected'; ?>>Preparando</option>
-                                <option value="a caminho" <?php if($pedido['status'] == 'a caminho') echo 'selected'; ?>>A Caminho</option>
-                                <option value="entregue" <?php if($pedido['status'] == 'entregue') echo 'selected'; ?>>Entregue</option>
+                                <?php foreach ($status_options as $status): ?>
+                                    <option value="<?php echo $status; ?>" <?php if ($pedido['status'] == $status) echo 'selected'; ?>>
+                                        <?php echo ucwords(str_replace('_', ' ', $status)); ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
-                            <button type="submit" name="mudar_status">Alterar</button>
+                            <button type="submit">OK</button>
                         </form>
+                    </td>
+                    <td>
+                        <a href="pedido_detalhes.php?id=<?php echo $pedido['id']; ?>" class="btn-edit">Ver Detalhes</a>
                     </td>
                 </tr>
             <?php endforeach; ?>

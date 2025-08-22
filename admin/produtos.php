@@ -135,10 +135,11 @@ $produtos = $pdo->query("
                     <td><?php echo htmlspecialchars($produto['nome_categoria'] ?? 'Sem categoria'); ?></td>
                     <td>R$ <?php echo number_format($produto['preco'], 2, ',', '.'); ?></td>
                     <td><?php echo $produto['ativo'] ? 'Sim' : 'Não'; ?></td>
-                    <td>
-                        <a href="produtos.php?edit=<?php echo $produto['id']; ?>" class="btn-edit">Editar</a>
-                        <a href="produtos.php?delete=<?php echo $produto['id']; ?>" class="btn-remover" onclick="return confirm('Tem certeza?');">Excluir</a>
-                    </td>
+                   <td>
+    <a href="produtos.php?edit=<?php echo $produto['id']; ?>" class="btn-edit">Editar</a>
+    <a href="produto_opcoes.php?produto_id=<?php echo $produto['id']; ?>" class="btn-opcoes">Opções</a>
+    <a href="produtos.php?delete=<?php echo $produto['id']; ?>" class="btn-remover" onclick="return confirm('Tem certeza?');">Excluir</a>
+</td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
