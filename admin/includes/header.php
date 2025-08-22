@@ -7,17 +7,22 @@ require_once __DIR__ . '/../../config/db.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Painel Admin - PlataFood</title>
+    
+    <script>
+        // Pega o tema salvo no localStorage ou usa 'tema-claro' como padrão
+        const tema = localStorage.getItem('adminTheme') || 'tema-claro';
+        // Aplica a classe ao elemento <html> para que o CSS funcione imediatamente
+        document.documentElement.className = tema;
+    </script>
+
     <link rel="stylesheet" href="/anotaai-clone/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
+<body class="admin-page">
     <header class="admin-header">
         <div class="container">
-            <a href="dashboard.php" class="logo">Admin Anota Aí</a>
+            <a href="dashboard.php" class="logo">Admin PlataFood</a>
             <nav>
                 <ul>
                     <li><a href="dashboard.php">Dashboard</a></li>

@@ -497,3 +497,351 @@ footer {
     margin-top: 2.5rem;
     height: 400px; /* Define uma altura fixa para o gráfico */
 }
+
+/* --- Estilos Adicionais para o Rodapé Profissional --- */
+
+.site-footer {
+    background-color: #333; /* Um cinza escuro, profissional */
+    color: #f4f4f4; /* Texto claro para contraste */
+    padding-top: 40px;
+    font-size: 0.9rem;
+}
+
+.footer-content {
+    display: flex;
+    flex-wrap: wrap; /* Garante que as colunas se ajustem em telas menores */
+    justify-content: space-between;
+    gap: 30px; /* Espaçamento entre as colunas */
+    padding-bottom: 30px;
+}
+
+.footer-section {
+    flex: 1; /* Faz com que as colunas tentem ocupar o mesmo espaço */
+    min-width: 220px; /* Largura mínima para cada coluna antes de quebrar */
+}
+
+.footer-logo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #e67e22; /* Laranja para destacar a marca */
+    margin-bottom: 15px;
+}
+
+.footer-section h4 {
+    color: #fff;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+/* Linha decorativa abaixo dos títulos das seções */
+.footer-section h4::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 40px;
+    height: 2px;
+    background-color: #e67e22;
+}
+
+.footer-section p {
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+
+.footer-section .contato span {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.footer-section ul {
+    list-style: none;
+}
+
+.footer-section ul a {
+    text-decoration: none;
+    color: #f4f4f4;
+    display: block;
+    margin-bottom: 10px;
+    transition: color 0.3s ease;
+}
+
+.footer-section ul a:hover {
+    color: #e67e22; /* Efeito hover laranja */
+}
+
+.footer-section .social-icon {
+    display: block;
+    text-decoration: none;
+    color: #f4f4f4;
+    margin-bottom: 10px;
+    transition: color 0.3s ease;
+}
+
+.footer-section .social-icon:hover {
+    color: #e67e22;
+}
+
+.footer-section .social-icon i {
+    margin-right: 10px; /* Espaço entre o ícone e o texto */
+    font-size: 1.2rem;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding: 20px 0;
+    border-top: 1px solid #555; /* Linha sutil para separar */
+    font-size: 0.85rem;
+}
+
+
+/* --- Estilos Adicionais para o Header Profissional --- */
+/* --- Estilos Adicionais para o Header Profissional (VERSÃO CORRIGIDA) --- */
+
+.site-header {
+    background-color: #ffffff;
+    padding: 1rem 0;
+    border-bottom: 1px solid #eee;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.site-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.site-header .logo {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #e67e22;
+    text-decoration: none;
+}
+.store-logo-img { max-height: 45px; }
+
+#nav-menu ul {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+
+#nav-menu li {
+    margin-left: 10px;
+}
+
+#nav-menu a {
+    text-decoration: none;
+    color: #555;
+    font-weight: 500;
+    padding: 10px 15px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+#nav-menu a:hover {
+    color: #e67e22;
+    background-color: #fdf5ef;
+}
+
+#nav-menu a.active {
+    color: #e67e22;
+    font-weight: 600;
+}
+
+.nav-button {
+    background-color: #e67e22;
+    color: #fff !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.nav-button:hover {
+    background-color: #d35400;
+    color: #fff !important;
+}
+
+#hamburger-btn {
+    display: none; /* Escondido em telas grandes */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    z-index: 1002; /* Essencial para ficar ACIMA do menu */
+}
+#hamburger-btn .bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: #333;
+    margin: 5px 0;
+    transition: all 0.4s ease-in-out;
+}
+
+/* Animação para o 'X' */
+#hamburger-btn.active .bar:nth-child(2) {
+    opacity: 0; /* Barra do meio some */
+}
+#hamburger-btn.active .bar:nth-child(1) {
+    transform: translateY(8px) rotate(45deg); /* Barra de cima desce e gira */
+}
+#hamburger-btn.active .bar:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg); /* Barra de baixo sobe e gira */
+}
+
+
+/* --- Media Query para Telas Pequenas (VERSÃO CORRIGIDA) --- */
+@media (max-width: 768px) {
+    /* CORREÇÃO IMPORTANTE: Remove o empilhamento para alinhar o logo e o botão */
+    .site-header .container {
+        flex-direction: row; 
+    }
+    
+    #hamburger-btn {
+        display: block;
+    }
+
+    #nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 300px;
+        height: 100vh;
+        background-color: #fff;
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 80px 30px 30px;
+        transition: right 0.4s ease-in-out;
+        z-index: 1001; /* Para ficar abaixo do botão de fechar */
+    }
+
+    #nav-links.active {
+        right: 0;
+    }
+
+    #nav-menu li {
+        margin: 15px 0;
+        width: 100%;
+    }
+    
+    #nav-menu a {
+      font-size: 1.1rem;
+    }
+}
+
+
+
+/* --- Estilos Adicionais para Temas do Painel Admin (VERSÃO 2.0 APRIMORADA) --- */
+
+/* Variáveis do Tema Claro (Padrão) */
+html.tema-claro {
+    --admin-bg: #f8f9fa;
+    --admin-surface: #ffffff;
+    --admin-text: #333;
+    --admin-heading: #2c3e50;
+    --admin-border: #dee2e6;
+    --admin-input-bg: #ffffff;
+    --admin-grid-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Variáveis do Tema Escuro Aprimorado */
+html.tema-escuro {
+    --admin-bg: #0d1117; /* Fundo quase preto (GitHub Dark) */
+    --admin-surface: #161b22; /* Superfície um pouco mais clara */
+    --admin-text: #c9d1d9; /* Texto claro, mas não branco puro */
+    --admin-heading: #ffffff; /* Títulos brancos */
+    --admin-border: #30363d; /* Borda sutil */
+    --admin-input-bg: #0d1117; /* Fundo do input igual ao fundo principal */
+    --admin-grid-color: rgba(255, 255, 255, 0.1); /* Linhas do gráfico claras */
+}
+
+/* Aplicando as variáveis aos elementos do Admin */
+.admin-main {
+    background-color: var(--admin-bg);
+    transition: background-color 0.3s ease;
+}
+
+html[class*="tema-"] .admin-main h1,
+html[class*="tema-"] .admin-main h2 {
+    color: var(--admin-heading);
+}
+
+/* Estilo unificado para os 'cards' do admin */
+html[class*="tema-"] .stat-card,
+html[class*="tema-"] .form-wrapper,
+html[class*="tema-"] .grafico-container,
+html[class*="tema-"] .tabela-admin {
+    background-color: var(--admin-surface);
+    border: 1px solid var(--admin-border);
+    color: var(--admin-text);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Estilo para tabelas no tema */
+html[class*="tema-"] .tabela-admin th {
+    background-color: var(--admin-bg);
+    color: var(--admin-heading);
+    border-color: var(--admin-border);
+}
+html[class*="tema-"] .tabela-admin td {
+    border-color: var(--admin-border);
+}
+html[class*="tema-"] .tabela-admin tr:nth-child(even) {
+    background-color: var(--admin-bg);
+}
+
+/* APLICA O TEMA AOS FORMULÁRIOS E INPUTS */
+html[class*="tema-"] .form-wrapper input[type="text"],
+html[class*="tema-"] .form-wrapper input[type="number"],
+html[class*="tema-"] .form-wrapper input[type="email"],
+html[class*="tema-"] .form-wrapper input[type="password"],
+html[class*="tema-"] .form-wrapper input[type="file"],
+html[class*="tema-"] .form-wrapper textarea,
+html[class*="tema-"] .form-wrapper select {
+    background-color: var(--admin-input-bg);
+    border-color: var(--admin-border);
+    color: var(--admin-text);
+}
+html[class*="tema-"] .form-wrapper input:focus,
+html[class*="tema-"] .form-wrapper textarea:focus,
+html[class*="tema-"] .form-wrapper select:focus {
+    border-color: #e67e22; /* Laranja de destaque ao focar */
+}
+
+/* APLICA O TEMA AOS BOTÕES DE RÁDIO */
+html[class*="tema-"] .form-wrapper .radio-label {
+    border-color: var(--admin-border);
+}
+html[class*="tema-"] .form-wrapper .radio-label:hover {
+    background-color: var(--admin-bg);
+}
+html.tema-escuro .form-wrapper .radio-label.selected {
+    background-color: rgba(230, 126, 34, 0.1); /* Fundo laranja transparente */
+}
+
+/* Aplicando as variáveis aos elementos do Admin (VERSÃO CORRIGIDA) */
+
+/* Aplica a cor de fundo do tema ao corpo inteiro da página do admin */
+body.admin-page {
+    background-color: var(--admin-bg);
+    transition: background-color 0.3s ease;
+}
+
+/* Garante que o container principal não tenha uma cor de fundo própria */
+.admin-main {
+    background-color: transparent;
+}
+
+html[class*="tema-"] .admin-main h1,
+html[class*="tema-"] .admin-main h2 {
+    color: var(--admin-heading);
+}
+/* ... o resto das regras do tema continua igual ... */
