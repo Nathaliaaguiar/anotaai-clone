@@ -1,16 +1,27 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('PlataFood JS Carregado com Sucesso!');
 
-   // --- LÓGICA DE NOTIFICAÇÃO DE PEDIDO A CAMINHO ---
+    // --- ANIMAÇÃO DO CARRINHO FLUTUANTE ---
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('item_adicionado')) {
+        const floatingCart = document.getElementById('floating-cart');
+        if (floatingCart) {
+            const animationElement = document.getElementById('add-to-cart-animation');
+            animationElement.classList.add('show');
+            setTimeout(() => {
+                animationElement.classList.remove('show');
+            }, 1500);
+        }
+    }
+
+    // --- LÓGICA DE NOTIFICAÇÃO DE PEDIDO A CAMINHO (GIF) ---
     const alertaPedido = document.getElementById('alerta-pedido-caminho');
     const estaLogado = document.querySelector('a[href="perfil.php"]');
-
     if (alertaPedido && estaLogado) {
         const btnFecharAlerta = document.getElementById('fechar-alerta-pedido');
         btnFecharAlerta.addEventListener('click', () => {
             alertaPedido.style.display = 'none';
         });
-
         setInterval(function() {
             fetch('/anotaai-clone/user/verificar_status.php')
                 .then(response => response.json())
@@ -24,11 +35,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 })
                 .catch(error => console.error('Erro ao verificar status:', error));
-        }, 20000); // 20 segundos
+        }, 20000);
     }
-    
-    
-    // --- LÓGICA DO MODAL DE OBSERVAÇÃO E OPÇÕES ---
+
+    // --- LÓGICA DO MODAL DE OBSERVAÇÃO E OPÇÕES (RESTAURADA) ---
     const modal = document.getElementById('modal-observacao');
     if (modal) {
         const botoesAbrirModal = document.querySelectorAll('.btn-abrir-modal');
@@ -89,9 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 radiosDeOpcao.forEach(radio => {
                     radio.addEventListener('change', function() {
                         modalOpcoesContainer.querySelectorAll('.radio-label').forEach(label => label.classList.remove('selected'));
-                        if (this.checked) {
-                            this.parentElement.classList.add('selected');
-                        }
+                        if (this.checked) { this.parentElement.classList.add('selected'); }
                     });
                 });
                 modalOpcoesContainer.removeEventListener('change', calcularPrecoTotal);
@@ -101,10 +109,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 modal.style.display = 'block';
             });
         });
+
         if (botaoFecharModal) { botaoFecharModal.addEventListener('click', () => modal.style.display = 'none'); }
         window.addEventListener('click', (event) => { if (event.target == modal) modal.style.display = 'none'; });
     }
-    
+
+    // --- OUTRAS LÓGICAS (RESTAURADAS) ---
     document.querySelectorAll('.btn-remover').forEach(botao => {
         botao.addEventListener('click', (event) => {
             if (!confirm('Você tem certeza que deseja remover este item?')) {

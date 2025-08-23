@@ -699,7 +699,7 @@ footer {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 .nav-button:hover {
-    background-color: #d35400;
+    background-color: black !important;
     color: #fff !important;
 }
 
@@ -1280,5 +1280,83 @@ input:checked + .slider:before { transform: translateX(26px); }
     to {
         transform: scale(1);
         opacity: 1;
+    }
+}
+/* --- Estilos para o Carrinho Flutuante e Animação --- */
+
+.floating-cart {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background-color: var(--primary-color, #ff6b00);
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.8rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 1000;
+    text-decoration: none;
+    transition: transform 0.2s ease-in-out;
+}
+
+.floating-cart:hover {
+    transform: scale(1.1);
+}
+
+.cart-counter {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: black;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: bold;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid white;
+}
+
+.add-to-cart-animation {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #e74c3c;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.5s ease-out;
+}
+
+.add-to-cart-animation.show {
+    opacity: 1;
+    visibility: visible;
+    animation: popAndFade 1.5s ease-in-out forwards;
+}
+
+@keyframes popAndFade {
+    0% {
+        transform: translate(-50%, 0) scale(0.5);
+        opacity: 1;
+    }
+    50% {
+        transform: translate(-50%, -60px) scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -80px) scale(1);
+        opacity: 0;
+        visibility: hidden;
     }
 }

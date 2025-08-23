@@ -2,9 +2,9 @@
 session_start();
 require_once __DIR__ . '/../config/db.php';
 
-// (Toda a lógica de buscar nome da loja, status, etc., permanece a mesma)
 $stmt_nome_loja = $pdo->query("SELECT valor FROM configuracoes WHERE chave = 'nome_loja'");
 $nome_da_loja = $stmt_nome_loja->fetchColumn() ?: 'PlataFood';
+$total_itens_carrinho = count($_SESSION['carrinho'] ?? []);
 
 function get_status_loja($pdo) {
     date_default_timezone_set('America/Sao_Paulo');
@@ -33,6 +33,7 @@ function is_active($page_name) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="/anotaai-clone/css/style.css">
 </head>
 <body class="user-page">
@@ -44,6 +45,12 @@ function is_active($page_name) {
             <button id="fechar-alerta-pedido" class="btn">OK</button>
         </div>
     </div>
+
+    <a href="carrinho.php" id="floating-cart" class="floating-cart">
+        <i class="fas fa-shopping-bag"></i>
+        <span id="cart-counter" class="cart-counter"><?php echo $total_itens_carrinho; ?></span>
+        <div id="add-to-cart-animation" class="add-to-cart-animation">🎉 +1</div>
+    </a>
 
     <header class="site-header">
         <div class="container">
@@ -64,9 +71,11 @@ function is_active($page_name) {
                 </button>
                 <ul id="nav-links">
                     <li><a href="index.php" class="<?php echo is_active('index.php'); ?>">Cardápio</a></li>
-                    <li><a href="carrinho.php" class="<?php echo is_active('carrinho.php'); ?>">
-                        Carrinho (<?php echo count($_SESSION['carrinho'] ?? []); ?>)
-                    </a></li>
+                    <li>
+                        <a href="carrinho.php" class="<?php echo is_active('carrinho.php'); ?>">
+                            Carrinho (<?php echo $total_itens_carrinho; ?>)
+                        </a>
+                    </li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                         <li><a href="perfil.php" class="nav-button <?php echo is_active('perfil.php'); ?>">Meu Perfil</a></li>
                         <li><a href="logout.php">Sair</a></li>
