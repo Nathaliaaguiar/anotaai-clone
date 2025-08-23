@@ -1138,3 +1138,147 @@ input:checked + .slider:before { transform: translateX(26px); }
     color: #777;
     font-size: 0.9em;
 }
+
+/* --- Estilos para Logo e Nome da Loja no Header --- */
+
+/* Alinha a imagem da logo e o texto do nome lado a lado */
+.logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+/* Limita o tamanho da imagem da logo para não ficar muito grande */
+.store-logo-img {
+    max-height: 50px; /* Ajuste a altura máxima conforme sua necessidade */
+    width: auto;
+}
+
+/* Estilo da "letra bonita" para o nome da loja */
+.store-name {
+    font-family: 'Poppins', sans-serif; /* Usa a nova fonte importada */
+    font-size: 1.8rem; /* Tamanho da fonte */
+    font-weight: 700; /* Deixa a fonte mais forte (bold) */
+    color: #333; /* Cor escura para boa legibilidade */
+    margin-left: 15px; /* Espaçamento entre a logo e o nome */
+}
+/* --- Estilos para a Página de Detalhes do Pedido (Admin) --- */
+
+/* Organiza as informações do pedido e os itens em duas colunas */
+.detalhes-pedido-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* Coluna da esquerda menor, da direita maior */
+    gap: 25px; /* Espaçamento entre as colunas */
+}
+
+/* Em telas menores (celulares), as colunas ficam uma sobre a outra */
+@media (max-width: 900px) {
+    .detalhes-pedido-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- Cores para os Status dos Pedidos --- */
+/* (Isso vai funcionar tanto na lista principal quanto nos detalhes) */
+
+.status-pendente, .status-aguardando_pagamento {
+    background-color: #f39c12; /* Laranja */
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.status-preparando {
+    background-color: #3498db; /* Azul */
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.status-saiu_para_entrega {
+    background-color: #9b59b6; /* Roxo */
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.status-entregue {
+    background-color: #2ecc71; /* Verde */
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.status-cancelado {
+    background-color: #e74c3c; /* Vermelho */
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+/* --- Estilos para Alerta de Pedido a Caminho --- */
+
+.alerta-pedido {
+    display: none; /* Começa escondido por padrão */
+    position: fixed; /* Fica fixo na tela, mesmo com rolagem */
+    z-index: 2000; /* Garante que ele fique na frente de tudo */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6); /* Fundo preto semi-transparente */
+    
+    /* Centraliza o conteúdo do alerta no meio da tela */
+    justify-content: center;
+    align-items: center;
+}
+
+.alerta-pedido-content {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    width: 90%; /* Ocupa 90% da largura em telas pequenas */
+    max-width: 400px; /* Mas não passa de 400px em telas grandes */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    
+    /* Animação de surgimento */
+    animation: zoomIn 0.3s ease-out;
+}
+
+.alerta-pedido-content img {
+    width: 150px; /* Define um tamanho fixo e menor para o GIF */
+    margin-bottom: 1rem;
+}
+
+.alerta-pedido-content h2 {
+    color: #27ae60; /* Verde para sucesso */
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.alerta-pedido-content p {
+    color: #555;
+    margin-bottom: 1.5rem;
+}
+
+/* Animação simples para o alerta aparecer suavemente */
+@keyframes zoomIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

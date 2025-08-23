@@ -2,34 +2,24 @@
 session_start();
 require_once __DIR__ . '/../config/db.php';
 
-// --- FUNÇÃO PARA VERIFICAR O STATUS DA LOJA ---
-function get_status_loja($pdo) {
-    // Define o fuso horário correto para o Brasil
-    date_default_timezone_set('America/Sao_Paulo');
+// (Toda a lógica de buscar nome da loja, status, etc., permanece a mesma)
+$stmt_nome_loja = $pdo->query("SELECT valor FROM configuracoes WHERE chave = 'nome_loja'");
+$nome_da_loja = $stmt_nome_loja->fetchColumn() ?: 'PlataFood';
 
-    $dia_semana_atual = date('w'); // 0=Domingo, 1=Segunda, ...
+function get_status_loja($pdo) {
+    date_default_timezone_set('America/Sao_Paulo');
+    $dia_semana_atual = date('w');
     $hora_atual = date('H:i:s');
-    
-    // Busca o horário do dia atual no banco
     $stmt = $pdo->prepare("SELECT * FROM horarios_funcionamento WHERE dia_semana = ?");
     $stmt->execute([$dia_semana_atual]);
     $horario_hoje = $stmt->fetch();
-
-    if ($horario_hoje && $horario_hoje['ativo']) {
-        // Compara a hora atual com os horários de abertura e fechamento
-        if ($hora_atual >= $horario_hoje['horario_abertura'] && $hora_atual <= $horario_hoje['horario_fechamento']) {
-            return ['status' => 'aberto', 'texto' => 'Aberto agora'];
-        }
+    if ($horario_hoje && $horario_hoje['ativo'] && ($hora_atual >= $horario_hoje['horario_abertura'] && $hora_atual <= $horario_hoje['horario_fechamento'])) {
+        return ['status' => 'aberto', 'texto' => 'Aberto agora'];
     }
-    
-    // Se não se encaixar em nenhuma das condições acima, a loja está fechada
     return ['status' => 'fechado', 'texto' => 'Fechado no momento'];
 }
-
 $status_loja = get_status_loja($pdo);
 
-
-// Função para verificar a página ativa
 function is_active($page_name) {
     return basename($_SERVER['PHP_SELF']) == $page_name ? 'active' : '';
 }
@@ -39,29 +29,35 @@ function is_active($page_name) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PlataFood - Delivery</title>
+    <title><?php echo htmlspecialchars($nome_da_loja); ?> - Delivery</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/anotaai-clone/css/style.css">
 </head>
-<body>
+<body class="user-page">
+    <div id="alerta-pedido-caminho" class="alerta-pedido">
+        <div class="alerta-pedido-content">
+            <img src="/anotaai-clone/img/delivery.gif" alt="Pedido a caminho">
+            <h2>Seu pedido saiu para entrega!</h2>
+            <p>Fique atento, nosso entregador chegará em breve.</p>
+            <button id="fechar-alerta-pedido" class="btn">OK</button>
+        </div>
+    </div>
+
     <header class="site-header">
         <div class="container">
             <a href="index.php" class="logo">
                 <?php
                 $url_logo_loja = '/anotaai-clone/img/logo_loja.png';
                 if (file_exists($_SERVER['DOCUMENT_ROOT'] . $url_logo_loja)): ?>
-                    <img src="<?php echo $url_logo_loja; ?>?v=<?php echo time(); ?>" alt="PlataFood Logo" class="store-logo-img">
-                <?php else: ?>
-                    PlataFood
+                    <img src="<?php echo $url_logo_loja; ?>?v=<?php echo time(); ?>" alt="Logo de <?php echo htmlspecialchars($nome_da_loja); ?>" class="store-logo-img">
                 <?php endif; ?>
+                <span class="store-name"><?php echo htmlspecialchars($nome_da_loja); ?></span>
             </a>
-            
             <div class="status-loja status-<?php echo $status_loja['status']; ?>">
                 <span><?php echo $status_loja['texto']; ?></span>
             </div>
-            
             <nav id="nav-menu">
                 <button id="hamburger-btn">
                     <span class="bar"></span><span class="bar"></span><span class="bar"></span>

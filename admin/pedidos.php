@@ -20,7 +20,8 @@ $pedidos = $pdo->query("
     ORDER BY p.data DESC
 ")->fetchAll();
 
-$status_options = ['pendente', 'preparando', 'a_caminho', 'entregue', 'cancelado'];
+// --- CORREÇÃO AQUI: A lista de status agora está completa e correta ---
+$status_options = ['pendente', 'preparando', 'saiu_para_entrega', 'entregue', 'cancelado', 'aguardando_pagamento'];
 ?>
 
 <section class="admin-crud">
