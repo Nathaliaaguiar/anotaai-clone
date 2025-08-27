@@ -1,51 +1,51 @@
 <?php
 require_once 'includes/header.php';
 require_once 'includes/auth_check.php';
+// ADICIONADO: A "chave mestra"
+$loja_id = $_SESSION['admin_loja_id'];
 
-// --- LÓGICA DE ADICIONAR/EDITAR ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nome'])) {
     $nome = $_POST['nome'];
     $id = $_POST['id'] ?? null;
-
-    if ($id) { // Edição
-        $stmt = $pdo->prepare("UPDATE categorias SET nome = ? WHERE id = ?");
-        $stmt->execute([$nome, $id]);
-    } else { // Adição
-        $stmt = $pdo->prepare("INSERT INTO categorias (nome) VALUES (?)");
-        $stmt->execute([$nome]);
+    if ($id) {
+        // MODIFICADO: Garante que só edite categoria da própria loja
+        $stmt = $pdo->prepare("UPDATE categorias SET nome = ? WHERE id = ? AND loja_id = ?");
+        $stmt->execute([$nome, $id, $loja_id]);
+    } else {
+        // MODIFICADO: Adiciona a nova categoria na loja certa
+        $stmt = $pdo->prepare("INSERT INTO categorias (nome, loja_id) VALUES (?, ?)");
+        $stmt->execute([$nome, $loja_id]);
     }
     header('Location: categorias.php');
     exit;
 }
 
-// --- LÓGICA DE DELETAR ---
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
-    // Ao deletar uma categoria, a chave estrangeira fará com que os produtos fiquem com categoria_id = NULL
-    $stmt = $pdo->prepare("DELETE FROM categorias WHERE id = ?");
-    $stmt->execute([$id]);
+    // MODIFICADO: Garante que só delete categoria da própria loja
+    $stmt = $pdo->prepare("DELETE FROM categorias WHERE id = ? AND loja_id = ?");
+    $stmt->execute([$id, $loja_id]);
     header('Location: categorias.php');
     exit;
 }
 
-// Buscar categoria para editar
 $categoria_edicao = null;
 if (isset($_GET['edit'])) {
     $id = $_GET['edit'];
-    $stmt = $pdo->prepare("SELECT * FROM categorias WHERE id = ?");
-    $stmt->execute([$id]);
+    // MODIFICADO: Garante que só busque categoria da própria loja para editar
+    $stmt = $pdo->prepare("SELECT * FROM categorias WHERE id = ? AND loja_id = ?");
+    $stmt->execute([$id, $loja_id]);
     $categoria_edicao = $stmt->fetch();
 }
 
-// Listar todas as categorias
-$categorias = $pdo->query("SELECT * FROM categorias ORDER BY nome ASC")->fetchAll();
+// MODIFICADO: Lista apenas as categorias da loja logada
+$stmt = $pdo->prepare("SELECT * FROM categorias WHERE loja_id = ? ORDER BY nome");
+$stmt->execute([$loja_id]);
+$categorias = $stmt->fetchAll();
 ?>
-
 <section class="admin-crud">
     <h1>Gerenciar Categorias</h1>
-
-    <div class="form-wrapper">
-        <h2><?php echo $categoria_edicao ? 'Editar Categoria' : 'Adicionar Nova Categoria'; ?></h2>
+    <div class="form-container">
         <form action="categorias.php" method="POST">
             <input type="hidden" name="id" value="<?php echo $categoria_edicao['id'] ?? ''; ?>">
             <div class="form-group">
@@ -58,16 +58,9 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nome ASC")->fetchAl
             <?php endif; ?>
         </form>
     </div>
-
     <h2>Lista de Categorias</h2>
     <table class="tabela-admin">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nome</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
+        <thead><tr><th>ID</th><th>Nome</th><th>Ações</th></tr></thead>
         <tbody>
             <?php foreach ($categorias as $categoria): ?>
                 <tr>
@@ -82,5 +75,4 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nome ASC")->fetchAl
         </tbody>
     </table>
 </section>
-
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

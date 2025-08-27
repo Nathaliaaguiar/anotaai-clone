@@ -1360,3 +1360,31 @@ input:checked + .slider:before { transform: translateX(26px); }
         visibility: hidden;
     }
 }
+/* --- Estilos para os Filtros de Categoria --- */
+.filtros-categoria {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+.filtros-categoria a {
+    text-decoration: none;
+    background-color: #fff;
+    color: #333;
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+.filtros-categoria a:hover {
+    background-color: #f0f0f0;
+    border-color: #ccc;
+}
+.filtros-categoria a.active {
+    background-color: var(--primary-color, #ff6b00);
+    color: white;
+    border-color: var(--primary-color, #ff6b00);
+}

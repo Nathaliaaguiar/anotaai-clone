@@ -1,42 +1,36 @@
 <?php
 require_once 'includes/header.php';
 require_once 'includes/auth_check.php';
+// ADICIONADO: A "chave mestra"
+$loja_id = $_SESSION['admin_loja_id'];
 
-// Atualiza o status de um pedido
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pedido_id'])) {
     $pedido_id = $_POST['pedido_id'];
     $status = $_POST['status'];
-    $stmt = $pdo->prepare("UPDATE pedidos SET status = ? WHERE id = ?");
-    $stmt->execute([$status, $pedido_id]);
+    // MODIFICADO: Garante que só atualize status de pedidos da própria loja
+    $stmt = $pdo->prepare("UPDATE pedidos SET status = ? WHERE id = ? AND loja_id = ?");
+    $stmt->execute([$status, $pedido_id, $loja_id]);
     header("Location: pedidos.php");
     exit;
 }
 
-// Busca todos os pedidos com o nome do cliente
-$pedidos = $pdo->query("
+// MODIFICADO: Lista apenas os pedidos da loja logada
+$stmt = $pdo->prepare("
     SELECT p.*, u.nome as cliente_nome 
     FROM pedidos p 
     JOIN usuarios u ON p.usuario_id = u.id 
+    WHERE p.loja_id = ?
     ORDER BY p.data DESC
-")->fetchAll();
+");
+$stmt->execute([$loja_id]);
+$pedidos = $stmt->fetchAll();
 
-// --- CORREÇÃO AQUI: A lista de status agora está completa e correta ---
 $status_options = ['pendente', 'preparando', 'saiu_para_entrega', 'entregue', 'cancelado', 'aguardando_pagamento'];
 ?>
-
 <section class="admin-crud">
     <h1>Gerenciar Pedidos</h1>
     <table class="tabela-admin">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Cliente</th>
-                <th>Total</th>
-                <th>Data</th>
-                <th>Status</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
+        <thead><tr><th>ID</th><th>Cliente</th><th>Total</th><th>Data</th><th>Status</th><th>Ações</th></tr></thead>
         <tbody>
             <?php foreach ($pedidos as $pedido): ?>
                 <tr>
@@ -57,13 +51,10 @@ $status_options = ['pendente', 'preparando', 'saiu_para_entrega', 'entregue', 'c
                             <button type="submit">OK</button>
                         </form>
                     </td>
-                    <td>
-                        <a href="pedido_detalhes.php?id=<?php echo $pedido['id']; ?>" class="btn-edit">Ver Detalhes</a>
-                    </td>
+                    <td><a href="pedido_detalhes.php?id=<?php echo $pedido['id']; ?>" class="btn-edit">Ver Detalhes</a></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
 </section>
-
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
