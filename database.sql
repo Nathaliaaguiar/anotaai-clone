@@ -20,9 +20,9 @@ SET time_zone = "+00:00";
 --
 -- Banco de dados: `anotaai_clone`
 --
-CREATE DATABASE anotaai_clone
+CREATE DATABASE anotaai_clone;
 -- --------------------------------------------------------
-
+USE anotaai_clone;
 --
 -- Estrutura para tabela `admins`
 --
