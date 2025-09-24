@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_carrinho_modal'])
     }
     $_SESSION['carrinho_loja_id'] = $loja_id_redirect;
 
-    // O RESTO DA SUA LÓGICA ORIGINAL, INTACTA
+    
     $produto_id = $_POST['produto_id'];
     $quantidade = $_POST['quantidade'] ?? 1;
     $observacao = $_POST['observacao'] ?? '';

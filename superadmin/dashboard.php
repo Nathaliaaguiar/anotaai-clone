@@ -104,7 +104,9 @@ $admins = $stmt_lista_admins->fetchAll(PDO::FETCH_ASSOC);
 <body class="admin-page">
     <header class="admin-header">
         <div class="container">
-            <h1>Painel Master</h1>
+          <div class="logo">
+        <img src="../img/logoplatafood.png" alt="Logo da Plataforma">
+    </div>
             <nav>
                 <a href="logout.php">Sair</a>
             </nav>
