@@ -3,14 +3,11 @@ require_once 'includes/auth_check.php';
 
 $mensagem = '';
 
-// --- Lógica para CADASTRAR NOVA LOJA E SEU ADMIN (EXISTENTE) ---
-// ... (seu código atual para cadastrar loja e admin) ...
-
 // --- Lógica para ATIVAR/DESATIVAR LOJA ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_loja_status'])) {
     $loja_id_toggle = $_POST['loja_id_toggle'];
     $current_status = $_POST['current_status'];
-    $new_status = ($current_status == 1) ? 0 : 1; // Inverte o status
+    $new_status = ($current_status == 1) ? 0 : 1;
 
     try {
         $stmt = $pdo->prepare("UPDATE lojas SET ativa = ? WHERE id = ?");
@@ -27,27 +24,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['excluir_loja'])) {
 
     try {
         $pdo->beginTransaction();
-        // Excluir admins associados
-        $stmt_del_admins = $pdo->prepare("DELETE FROM admins WHERE loja_id = ?");
-        $stmt_del_admins->execute([$loja_id_excluir]);
-        // Excluir configurações
-        $stmt_del_configs = $pdo->prepare("DELETE FROM configuracoes WHERE loja_id = ?");
-        $stmt_del_configs->execute([$loja_id_excluir]);
-        // Excluir horários
-        $stmt_del_horarios = $pdo->prepare("DELETE FROM horarios_funcionamento WHERE loja_id = ?");
-        $stmt_del_horarios->execute([$loja_id_excluir]);
-        // Excluir áreas de entrega
-        $stmt_del_areas = $pdo->prepare("DELETE FROM areas_entrega WHERE loja_id = ?");
-        $stmt_del_areas->execute([$loja_id_excluir]);
-        // Excluir categorias (e produtos/opções em cascata se o DB estiver configurado)
-        // Se não estiver em cascata, precisaria de mais DELETEs aqui: produtos, produto_opcoes, pedido_itens, pedidos
-        $stmt_del_categorias = $pdo->prepare("DELETE FROM categorias WHERE loja_id = ?");
-        $stmt_del_categorias->execute([$loja_id_excluir]);
-        // Por fim, excluir a loja
-        $stmt_del_loja = $pdo->prepare("DELETE FROM lojas WHERE id = ?");
-        $stmt_del_loja->execute([$loja_id_excluir]);
-
+        $pdo->prepare("DELETE FROM admins WHERE loja_id = ?")->execute([$loja_id_excluir]);
+        $pdo->prepare("DELETE FROM configuracoes WHERE loja_id = ?")->execute([$loja_id_excluir]);
+        $pdo->prepare("DELETE FROM horarios_funcionamento WHERE loja_id = ?")->execute([$loja_id_excluir]);
+        $pdo->prepare("DELETE FROM areas_entrega WHERE loja_id = ?")->execute([$loja_id_excluir]);
+        $pdo->prepare("DELETE FROM categorias WHERE loja_id = ?")->execute([$loja_id_excluir]);
+        $pdo->prepare("DELETE FROM lojas WHERE id = ?")->execute([$loja_id_excluir]);
         $pdo->commit();
+
         $mensagem = '<p class="success">Loja e todos os dados associados excluídos com sucesso!</p>';
     } catch (PDOException $e) {
         $pdo->rollBack();
@@ -55,172 +39,134 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['excluir_loja'])) {
     }
 }
 
-
-// --- Lógica para LISTAR as lojas existentes (MODIFICADA PARA INCLUIR STATUS) ---
+// --- Listar lojas ---
 $stmt_lista_lojas = $pdo->query("SELECT id, nome, data_criacao, ativa FROM lojas ORDER BY nome ASC");
 $lojas = $stmt_lista_lojas->fetchAll(PDO::FETCH_ASSOC);
 
-// --- Lógica para LISTAR ADMINS (NOVA) ---
-$stmt_lista_admins = $pdo->query("SELECT a.id, a.email, l.nome as nome_loja, a.loja_id FROM admins a JOIN lojas l ON a.loja_id = l.id ORDER BY l.nome, a.email ASC");
+// --- Listar admins ---
+$stmt_lista_admins = $pdo->query("
+    SELECT a.id, a.email, l.nome as nome_loja, a.loja_id 
+    FROM admins a 
+    JOIN lojas l ON a.loja_id = l.id 
+    ORDER BY l.nome, a.email ASC
+");
 $admins = $stmt_lista_admins->fetchAll(PDO::FETCH_ASSOC);
-
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Super Admin</title>
-    <link rel="stylesheet" href="../css/style.css">
-    <style>
-        /* Adicione estilos específicos para o superadmin aqui, se necessário */
-        .superadmin-grid {
-            grid-template-columns: 1fr 1.5fr; /* Mantém o layout existente */
-        }
-        .full-width-section {
-            grid-column: 1 / -1; /* Ocupa todas as colunas */
-            margin-top: 40px;
-        }
-        .status-toggle-btn {
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: bold;
-            color: white;
-            border: none;
-            transition: background-color 0.3s ease;
-        }
-        .status-toggle-btn.active { background-color: #2ecc71; } /* Verde para ativo */
-        .status-toggle-btn.inactive { background-color: #e74c3c; } /* Vermelho para inativo */
-        .status-toggle-btn:hover { opacity: 0.8; }
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Dashboard Super Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .master-container { padding: 2rem; padding-top: 5rem; }
+    .master-cards-wrapper { display: flex; gap: 20px; justify-content: space-between; margin-top: 2rem; flex-wrap: wrap; }
+    .master-card {
+      flex: 1; min-width: 260px; background: #fff; border: 1px solid #ddd;
+      border-radius: 10px; padding: 8rem; text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1); display: flex;
+      flex-direction: column; justify-content: center; cursor:pointer;
+    }
+    .master-card h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #333; }
+    @media (max-width: 768px){ .master-cards-wrapper{ flex-direction: column; } }
+
+    /* MODAL */
+    .master-modal { display:none; position:fixed; z-index:1000; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
+    .master-modal-content { background:#fff; width:80%; max-height:80%; overflow-y:auto; padding:20px; border-radius:10px; }
+    .master-modal-header{ display:flex; justify-content:space-between; align-items:center; }
+    .master-close{ cursor:pointer; font-size:20px; font-weight:bold; }
+    table.master-table{ width:100%; border-collapse:collapse; margin-top:1rem; }
+    table.master-table th, table.master-table td{ border:1px solid #ddd; padding:10px; text-align:left; }
+    table.master-table th{ background:#f5f5f5; }
+    .action-btn{ padding:5px 10px; margin:0 3px; border:none; border-radius:5px; cursor:pointer; }
+    .btn-ativar{ background:#28a745; color:white; }
+    .btn-inativar{ background:#ffc107; color:white; }
+    .btn-excluir{ background:#dc3545; color:white; }
+    .btn-info{ background:#007bff; color:white; }
+    .extra-info{ display:none; font-size:0.9em; margin-top:5px; }
+  </style>
 </head>
 <body class="admin-page">
-    <header class="admin-header">
-        <div class="container">
-          <div class="logo">
-        <img src="../img/logoplatafood.png" alt="Logo da Plataforma">
+  <header class="admin-header">
+    <div class="container">
+      <div class="logo"><img src="../img/logoplatafood.png" alt="Logo"></div>
+      <nav><a href="logout.php">Sair</a></nav>
     </div>
-            <nav>
-                <a href="logout.php">Sair</a>
-            </nav>
-        </div>
-    </header>
+  </header>
 
-    <main class="container admin-main">
-        <?php echo $mensagem; ?>
+  <main class="master-container">
+    <?php echo $mensagem; ?>
 
-        <div class="superadmin-grid">
-            <div class="form-wrapper">
-                <h2>Cadastrar Nova Loja</h2>
-                <form action="dashboard.php" method="POST">
-                    <div class="form-group">
-                        <label for="nome_loja">Nome da Nova Loja:</label>
-                        <input type="text" id="nome_loja" name="nome_loja" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email_admin">Email do Admin da Loja:</label>
-                        <input type="email" id="email_admin" name="email_admin" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="senha_admin">Senha para o Admin da Loja:</label>
-                        <input type="password" id="senha_admin" name="senha_admin" required minlength="6">
-                    </div>
-                    <button type="submit" name="cadastrar_loja" class="btn">Cadastrar Loja</button>
+    <div class="master-cards-wrapper">
+      <div class="master-card"><h2>Analise cadastro loja</h2></div>
+      <div class="master-card" id="abrir-modal-lojas"><h2>Lojas Cadastradas</h2></div>
+      <div class="master-card"><h2>Usuários Cadastrados</h2></div>
+    </div>
+  </main>
+
+  <!-- Modal Lojas -->
+  <div id="modal-lojas" class="master-modal">
+    <div class="master-modal-content">
+      <div class="master-modal-header">
+        <h2>Gerenciar Lojas</h2>
+        <span class="master-close">&times;</span>
+      </div>
+      <table class="master-table">
+        <thead>
+          <tr><th>ID</th><th>Nome</th><th>Status</th><th>Ações</th></tr>
+        </thead>
+        <tbody>
+          <?php foreach($lojas as $loja): ?>
+            <tr>
+              <td><?= $loja['id'] ?></td>
+              <td><?= htmlspecialchars($loja['nome']) ?></td>
+              <td><?= $loja['ativa'] ? 'Ativa' : 'Inativa' ?></td>
+              <td>
+                <form method="POST" style="display:inline;">
+                  <input type="hidden" name="loja_id_toggle" value="<?= $loja['id'] ?>">
+                  <input type="hidden" name="current_status" value="<?= $loja['ativa'] ?>">
+                  <button type="submit" name="toggle_loja_status" class="action-btn <?= $loja['ativa']?'btn-inativar':'btn-ativar' ?>">
+                    <?= $loja['ativa']?'Inativar':'Ativar' ?>
+                  </button>
                 </form>
-            </div>
+                <form method="POST" style="display:inline;" onsubmit="return confirm('Excluir esta loja?')">
+                  <input type="hidden" name="loja_id_excluir" value="<?= $loja['id'] ?>">
+                  <button type="submit" name="excluir_loja" class="action-btn btn-excluir">Excluir</button>
+                </form>
+                <button type="button" class="action-btn btn-info" onclick="toggleExtraInfo(<?= $loja['id'] ?>)">Ver mais</button>
+              </td>
+            </tr>
+            <tr id="extra-<?= $loja['id'] ?>" class="extra-info">
+              <td colspan="4">
+                <strong>ID Loja:</strong> <?= $loja['id'] ?><br>
+                <?php foreach($admins as $admin): ?>
+                  <?php if($admin['loja_id']==$loja['id']): ?>
+                    <strong>ID Admin:</strong> <?= $admin['id'] ?><br>
+                    <strong>Email:</strong> <?= htmlspecialchars($admin['email']) ?><br>
+                  <?php endif; ?>
+                <?php endforeach; ?>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-            <div class="lista-wrapper">
-                <h2>Lojas Cadastradas</h2>
-                <?php if (empty($lojas)): ?>
-                    <p>Nenhuma loja cadastrada ainda.</p>
-                <?php else: ?>
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nome da Loja</th>
-                                <th>Data de Criação</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($lojas as $loja): ?>
-                                <tr>
-                                    <td><?php echo $loja['id']; ?></td>
-                                    <td><?php echo htmlspecialchars($loja['nome']); ?></td>
-                                    <td><?php echo date('d/m/Y H:i', strtotime($loja['data_criacao'])); ?></td>
-                                    <td>
-                                        <form method="POST" style="display:inline;">
-                                            <input type="hidden" name="loja_id_toggle" value="<?php echo $loja['id']; ?>">
-                                            <input type="hidden" name="current_status" value="<?php echo $loja['ativa']; ?>">
-                                            <button type="submit" name="toggle_loja_status" class="status-toggle-btn <?php echo $loja['ativa'] ? 'active' : 'inactive'; ?>">
-                                                <?php echo $loja['ativa'] ? 'Ativa' : 'Inativa'; ?>
-                                            </button>
-                                        </form>
-                                    </td>
-                                    <td class="action-buttons">
-                                        <form method="POST" style="display:inline;" onsubmit="return confirm('ATENÇÃO: Tem certeza que deseja EXCLUIR esta loja e TODOS os seus dados (produtos, pedidos, admins, etc.)? Esta ação é irreversível!');">
-                                            <input type="hidden" name="loja_id_excluir" value="<?php echo $loja['id']; ?>">
-                                            <button type="submit" name="excluir_loja" class="btn-remover">Excluir</button>
-                                        </form>
-                                        <!-- Futuramente: Botão para editar loja -->
-                                        <!-- <a href="edit_loja.php?id=<?php echo $loja['id']; ?>" class="btn-edit">Editar</a> -->
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                <?php endif; ?>
-            </div>
-        </div>
+  <script>
+    const modal = document.getElementById("modal-lojas");
+    const btn = document.getElementById("abrir-modal-lojas");
+    const span = document.querySelector(".master-close");
 
-        <div class="lista-wrapper full-width-section">
-            <h2>Administradores de Lojas</h2>
-            <?php if (empty($admins)): ?>
-                <p>Nenhum administrador de loja cadastrado ainda.</p>
-            <?php else: ?>
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>ID Admin</th>
-                            <th>Email</th>
-                            <th>Loja Associada</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($admins as $admin): ?>
-                            <tr>
-                                <td><?php echo $admin['id']; ?></td>
-                                <td><?php echo htmlspecialchars($admin['email']); ?></td>
-                                <td><?php echo htmlspecialchars($admin['nome_loja']); ?> (ID: <?php echo $admin['loja_id']; ?>)</td>
-                                <td class="action-buttons">
-                                    <!-- Futuramente: Botão para redefinir senha do admin -->
-                                    <!-- <form method="POST" style="display:inline;" onsubmit="return confirm('Redefinir senha para <?php echo htmlspecialchars($admin['email']); ?>?');">
-                                        <input type="hidden" name="admin_id_reset" value="<?php echo $admin['id']; ?>">
-                                        <button type="submit" name="reset_admin_password" class="btn-edit">Redefinir Senha</button>
-                                    </form> -->
-                                    <!-- Futuramente: Botão para excluir admin -->
-                                    <!-- <form method="POST" style="display:inline;" onsubmit="return confirm('Excluir administrador <?php echo htmlspecialchars($admin['email']); ?>?');">
-                                        <input type="hidden" name="admin_id_delete" value="<?php echo $admin['id']; ?>">
-                                        <button type="submit" name="delete_admin" class="btn-remover">Excluir Admin</button>
-                                    </form> -->
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
-        </div>
+    btn.onclick = () => { modal.style.display = "flex"; }
+    span.onclick = () => { modal.style.display = "none"; }
+    window.onclick = (e) => { if (e.target == modal) { modal.style.display = "none"; } }
 
-    </main>
+    function toggleExtraInfo(id){
+      const row = document.getElementById("extra-"+id);
+      row.style.display = (row.style.display==="table-row")?"none":"table-row";
+    }
+  </script>
 </body>
 </html>
