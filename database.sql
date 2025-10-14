@@ -566,7 +566,10 @@ ALTER TABLE `produtos`
 ALTER TABLE `produto_opcoes`
   ADD CONSTRAINT `produto_opcoes_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+-- Adicionar apenas as colunas que faltam, mantendo email e senha
+ALTER TABLE lojas 
+ADD COLUMN telefone VARCHAR(20) NULL AFTER nome,
+ADD COLUMN endereco TEXT NULL AFTER telefone,
+ADD COLUMN bairro VARCHAR(100) NULL AFTER endereco,
+ADD COLUMN data_analise TIMESTAMP NULL AFTER data_criacao,
+ADD COLUMN observacao_analise TEXT NULL AFTER data_analise;
