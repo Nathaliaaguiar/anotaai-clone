@@ -1,41 +1,48 @@
 <?php
 session_start();
+ob_start(); // inicia buffer para evitar problemas com header()
+
 require_once __DIR__ . '/../config/db.php';
 
 $erro_login = '';
 $sucesso_cadastro = '';
 $erro_cadastro = '';
 
-// Lógica de Login (agora usando a tabela lojas)
+// ========================
+// LÓGICA DE LOGIN
+// ========================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
-    $email = $_POST['email']; 
+
+    $email = trim($_POST['email']);
     $senha = $_POST['senha'];
 
-    // Busca na tabela lojas (onde estão email e senha)
+    // Busca a loja pelo email
     $stmt = $pdo->prepare("SELECT * FROM lojas WHERE email = ?");
     $stmt->execute([$email]);
-    $loja = $stmt->fetch();
+    $loja = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($loja) {
-        // Verificar se a loja está aprovada
-        if (!$loja['aprovado'] || !$loja['ativa']) {
-            $erro_login = "Sua loja está em análise. Aguarde a aprovação.";
-        } elseif (password_verify($senha, $loja['senha'])) {
+        // Verifica se a senha bate
+        if (password_verify($senha, $loja['senha'])) {
+            // Login ok
             $_SESSION['admin_loja_id'] = $loja['id'];
             $_SESSION['loja_nome'] = $loja['nome'];
-            header("Location: dashboard.php");
+
+            // Redireciona para o Google
+            header("Location: ../../dashboard.php");
             exit();
         } else {
-            $erro_login = "Email ou senha inválidos.";
+            $erro_login = "Senha incorreta.";
         }
     } else {
-        $erro_login = "Email ou senha inválidos.";
+        $erro_login = "Email não encontrado.";
     }
 }
 
-// Lógica de Cadastro
+// ========================
+// LÓGICA DE CADASTRO
+// ========================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
-    // Dados da loja
     $nome_loja = trim($_POST['nome_loja']);
     $email_admin = trim($_POST['email_admin']);
     $senha = $_POST['senha_cadastro'];
@@ -43,8 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
     $telefone = trim($_POST['telefone']);
     $endereco_loja = trim($_POST['endereco_loja']);
     $bairro_loja = trim($_POST['bairro_loja']);
-    
-    // Validações
+
     if ($senha !== $confirmar_senha) {
         $erro_cadastro = "As senhas não coincidem.";
     } elseif (strlen($senha) < 6) {
@@ -52,18 +58,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
     } else {
         try {
             $pdo->beginTransaction();
-            
-            // 1. Criar a loja com email e senha (aprovado = 0 inicialmente)
+
             $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
-            $stmt_loja = $pdo->prepare("INSERT INTO lojas (nome, telefone, endereco, bairro, email, senha, aprovado, ativa, data_analise) VALUES (?, ?, ?, ?, ?, ?, 0, 0, NOW())");
+
+            // Criar loja
+            $stmt_loja = $pdo->prepare("INSERT INTO lojas (nome, telefone, endereco, bairro, email, senha, aprovado, ativa, data_criacao, data_analise) VALUES (?, ?, ?, ?, ?, ?, 0, 0, NOW(), NOW())");
             $stmt_loja->execute([$nome_loja, $telefone, $endereco_loja, $bairro_loja, $email_admin, $senha_hash]);
             $loja_id = $pdo->lastInsertId();
-            
-            // 2. Criar também na tabela admins (para manter compatibilidade)
+
+            // Criar admin
             $stmt_admin = $pdo->prepare("INSERT INTO admins (loja_id, email, senha) VALUES (?, ?, ?)");
             $stmt_admin->execute([$loja_id, $email_admin, $senha_hash]);
-            
-            // 3. Adicionar configurações básicas da loja
+
+            // Configurações básicas
             $stmt_config = $pdo->prepare("INSERT INTO configuracoes (loja_id, chave, valor) VALUES (?, ?, ?)");
             $configs = [
                 ['nome_loja', $nome_loja],
@@ -72,19 +79,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
                 ['bairro', $bairro_loja],
                 ['email_contato', $email_admin]
             ];
-            
             foreach ($configs as $config) {
                 $stmt_config->execute([$loja_id, $config[0], $config[1]]);
             }
-            
-            // 4. Adicionar área de entrega para o bairro da loja
+
+            // Área de entrega
             $stmt_area = $pdo->prepare("INSERT INTO areas_entrega (loja_id, bairro, taxa_entrega) VALUES (?, ?, 0.00)");
             $stmt_area->execute([$loja_id, $bairro_loja]);
-            
+
             $pdo->commit();
-            
+
             $sucesso_cadastro = "✅ Cadastro realizado com sucesso! Sua loja está em análise e em breve estará ativa no sistema. Entraremos em contato pelo e-mail informado.";
-            
+            error_log("Cadastro concluído - Loja ID {$loja_id} ({$nome_loja})");
+
         } catch (PDOException $e) {
             $pdo->rollBack();
             if ($e->errorInfo[1] == 1062) {
@@ -92,6 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
             } else {
                 $erro_cadastro = "Erro ao cadastrar: " . $e->getMessage();
             }
+            error_log("Erro cadastro: " . $e->getMessage());
         }
     }
 }
@@ -212,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
         <!-- Login -->
         <div class="form-wrapper">
             <h2>Login da Loja</h2>
-            <?php if(isset($erro_login) && !empty($erro_login)): ?>
+            <?php if(!empty($erro_login)): ?>
                 <p class="error"><?php echo $erro_login; ?></p>
             <?php endif; ?>
             <form action="index.php" method="POST">
@@ -231,10 +239,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
         <!-- Cadastro -->
         <div class="form-wrapper">
             <h2>Cadastrar Loja</h2>
-            <?php if(isset($sucesso_cadastro) && !empty($sucesso_cadastro)): ?>
+            <?php if(!empty($sucesso_cadastro)): ?>
                 <p class="success"><?php echo $sucesso_cadastro; ?></p>
             <?php endif; ?>
-            <?php if(isset($erro_cadastro) && !empty($erro_cadastro)): ?>
+            <?php if(!empty($erro_cadastro)): ?>
                 <p class="error"><?php echo $erro_cadastro; ?></p>
             <?php endif; ?>
             <form action="index.php" method="POST">
@@ -272,3 +280,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
     </div>
 </body>
 </html>
+
+<?php
+ob_end_flush(); // envia todo o conteúdo
+?>

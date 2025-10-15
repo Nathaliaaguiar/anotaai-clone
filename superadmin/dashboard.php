@@ -1,99 +1,115 @@
 <?php
-// É OBRIGATÓRIO iniciar a sessão para a lógica de ativar/inativar funcionar
-session_start(); 
-require_once 'includes/auth_check.php';
+// dashboard_super_admin.php
+session_start();
+require_once 'includes/auth_check.php'; // garante $pdo e validação de sessão
 
 $mensagem = '';
 
-// --- Lógica para ATIVAR/DESATIVAR LOJA ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_loja_status'])) {
-    $loja_id_toggle = $_POST['loja_id_toggle'];
-    $current_status = $_POST['current_status'];
-    $new_status = ($current_status == 1) ? 0 : 1;
+// --- AÇÕES: Aprovar / Recusar (Excluir) / Toggle Ativa ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    try {
-        $stmt = $pdo->prepare("UPDATE lojas SET ativa = ? WHERE id = ?");
-        $stmt->execute([$new_status, $loja_id_toggle]);
-        $mensagem = '<p class="success">Status da loja atualizado com sucesso!</p>';
-    } catch (PDOException $e) {
-        $mensagem = '<p class="error">Erro ao atualizar status da loja: ' . $e->getMessage() . '</p>';
+    // Aprovar loja (vinda do modal de análise)
+    if (isset($_POST['aprovar_loja'])) {
+        $loja_id = (int) $_POST['loja_id_aprovar'];
+        try {
+            $stmt = $pdo->prepare("UPDATE lojas SET aprovado = 1, ativa = 1, data_analise = NOW() WHERE id = ?");
+            $stmt->execute([$loja_id]);
+            $mensagem = '<p class="success">Loja aprovada com sucesso!</p>';
+        } catch (PDOException $e) {
+            $mensagem = '<p class="error">Erro ao aprovar loja: ' . $e->getMessage() . '</p>';
+        }
+    }
+
+    // Recusar loja (excluir) - usado tanto em pendentes quanto em aprovadas
+    if (isset($_POST['excluir_loja'])) {
+        $loja_id_excluir = (int) $_POST['loja_id_excluir'];
+        try {
+            $pdo->beginTransaction();
+            $pdo->prepare("DELETE FROM admins WHERE loja_id = ?")->execute([$loja_id_excluir]);
+            $pdo->prepare("DELETE FROM configuracoes WHERE loja_id = ?")->execute([$loja_id_excluir]);
+            $pdo->prepare("DELETE FROM horarios_funcionamento WHERE loja_id = ?")->execute([$loja_id_excluir]);
+            $pdo->prepare("DELETE FROM areas_entrega WHERE loja_id = ?")->execute([$loja_id_excluir]);
+            $pdo->prepare("DELETE FROM categorias WHERE loja_id = ?")->execute([$loja_id_excluir]);
+            $pdo->prepare("DELETE FROM lojas WHERE id = ?")->execute([$loja_id_excluir]);
+            $pdo->commit();
+            $mensagem = '<p class="success">Loja removida com sucesso.</p>';
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            $mensagem = '<p class="error">Erro ao remover loja: ' . $e->getMessage() . '</p>';
+        }
+    }
+
+    // Toggle ativa/inativa (apenas altera 'ativa', mantem 'aprovado' como está)
+    if (isset($_POST['toggle_loja_status'])) {
+        $loja_id_toggle = (int) $_POST['loja_id_toggle'];
+        $current_status = (int) $_POST['current_status'];
+        $new_status = ($current_status === 1) ? 0 : 1;
+        try {
+            $stmt = $pdo->prepare("UPDATE lojas SET ativa = ? WHERE id = ?");
+            $stmt->execute([$new_status, $loja_id_toggle]);
+            $mensagem = '<p class="success">Status da loja atualizado com sucesso!</p>';
+        } catch (PDOException $e) {
+            $mensagem = '<p class="error">Erro ao atualizar status da loja: ' . $e->getMessage() . '</p>';
+        }
+    }
+
+    // Toggle usuário (sessão) - manteve sua lógica
+    if (isset($_POST['toggle_usuario_status'])) {
+        $usuario_id_toggle = $_POST['usuario_id_toggle'];
+        if (!isset($_SESSION['inactive_users'])) {
+            $_SESSION['inactive_users'] = [];
+        }
+        if (isset($_SESSION['inactive_users'][$usuario_id_toggle])) {
+            unset($_SESSION['inactive_users'][$usuario_id_toggle]);
+        } else {
+            $_SESSION['inactive_users'][$usuario_id_toggle] = true;
+        }
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit();
+    }
+
+    // Excluir usuário
+    if (isset($_POST['excluir_usuario'])) {
+        $usuario_id_excluir = $_POST['usuario_id_excluir'];
+        try {
+            $stmt = $pdo->prepare("DELETE FROM usuarios WHERE id = ?");
+            $stmt->execute([$usuario_id_excluir]);
+            $mensagem .= '<p class="success">Usuário excluído com sucesso!</p>';
+        } catch (PDOException $e) {
+            $mensagem .= '<p class="error">Erro ao excluir usuário: ' . $e->getMessage() . '</p>';
+        }
     }
 }
 
-// --- Lógica para EXCLUIR LOJA ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['excluir_loja'])) {
-    $loja_id_excluir = $_POST['loja_id_excluir'];
+// --- Consultas: lojas pendentes (aprovado = 0) e lojas aprovadas (aprovado = 1) ---
+// Pegamos também email/id do admin associado (LEFT JOIN para não quebrar se não houver admin)
+$stmt_lista_pendentes = $pdo->query("
+    SELECT l.id, l.nome, l.email, l.endereco, l.bairro, l.data_criacao, a.id as admin_id, a.email as admin_email
+    FROM lojas l
+    LEFT JOIN admins a ON a.loja_id = l.id
+    WHERE l.aprovado = 0
+    ORDER BY l.data_criacao DESC
+");
+$lojas_pendentes = $stmt_lista_pendentes->fetchAll(PDO::FETCH_ASSOC);
 
-    try {
-        $pdo->beginTransaction();
-        $pdo->prepare("DELETE FROM admins WHERE loja_id = ?")->execute([$loja_id_excluir]);
-        $pdo->prepare("DELETE FROM configuracoes WHERE loja_id = ?")->execute([$loja_id_excluir]);
-        $pdo->prepare("DELETE FROM horarios_funcionamento WHERE loja_id = ?")->execute([$loja_id_excluir]);
-        $pdo->prepare("DELETE FROM areas_entrega WHERE loja_id = ?")->execute([$loja_id_excluir]);
-        $pdo->prepare("DELETE FROM categorias WHERE loja_id = ?")->execute([$loja_id_excluir]);
-        $pdo->prepare("DELETE FROM lojas WHERE id = ?")->execute([$loja_id_excluir]);
-        $pdo->commit();
-
-        $mensagem = '<p class="success">Loja e todos os dados associados excluídos com sucesso!</p>';
-    } catch (PDOException $e) {
-        $pdo->rollBack();
-        $mensagem = '<p class="error">Erro ao excluir loja: ' . $e->getMessage() . '</p>';
-    }
-}
-
-
-// --- Lógica para ATIVAR/DESATIVAR USUÁRIO (usando SESSÃO) ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_usuario_status'])) {
-    $usuario_id_toggle = $_POST['usuario_id_toggle'];
-    if (!isset($_SESSION['inactive_users'])) {
-        $_SESSION['inactive_users'] = [];
-    }
-    if (isset($_SESSION['inactive_users'][$usuario_id_toggle])) {
-        unset($_SESSION['inactive_users'][$usuario_id_toggle]); // Ativa o usuário
-    } else {
-        $_SESSION['inactive_users'][$usuario_id_toggle] = true; // Inativa o usuário
-    }
-    // Para recarregar a página e mostrar o status atualizado
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
-}
-
-// --- Lógica para EXCLUIR USUÁRIO ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['excluir_usuario'])) {
-    $usuario_id_excluir = $_POST['usuario_id_excluir'];
-    try {
-        $stmt = $pdo->prepare("DELETE FROM usuarios WHERE id = ?");
-        $stmt->execute([$usuario_id_excluir]);
-        $mensagem .= '<p class="success">Usuário e seus pedidos associados foram excluídos com sucesso!</p>';
-    } catch (PDOException $e) {
-        $mensagem .= '<p class="error">Erro ao excluir usuário: ' . $e->getMessage() . '</p>';
-    }
-}
-
-
-// --- Listar lojas ---
-$stmt_lista_lojas = $pdo->query("SELECT id, nome, data_criacao, ativa FROM lojas ORDER BY nome ASC");
+$stmt_lista_lojas = $pdo->query("
+    SELECT l.id, l.nome, l.ativa, l.data_criacao, l.endereco, l.bairro, a.id as admin_id, a.email as admin_email
+    FROM lojas l
+    LEFT JOIN admins a ON a.loja_id = l.id
+    WHERE l.aprovado = 1
+    ORDER BY l.nome ASC
+");
 $lojas = $stmt_lista_lojas->fetchAll(PDO::FETCH_ASSOC);
 
-// --- Listar admins ---
-$stmt_lista_admins = $pdo->query("
-    SELECT a.id, a.email, l.nome as nome_loja, a.loja_id 
-    FROM admins a 
-    JOIN lojas l ON a.loja_id = l.id 
-    ORDER BY l.nome, a.email ASC
-");
-$admins = $stmt_lista_admins->fetchAll(PDO::FETCH_ASSOC);
-
-// --- Listar usuários ---
+// Lista usuários (mantido)
 $stmt_lista_usuarios = $pdo->query("SELECT id, nome, email, endereco, bairro, telefone FROM usuarios ORDER BY nome ASC");
 $usuarios = $stmt_lista_usuarios->fetchAll(PDO::FETCH_ASSOC);
 
-// Garante que o array de sessão exista para evitar erros no HTML
+// Garante array de sessão
 if (!isset($_SESSION['inactive_users'])) {
     $_SESSION['inactive_users'] = [];
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -103,97 +119,155 @@ if (!isset($_SESSION['inactive_users'])) {
   <style>
     .master-container { padding: 2rem; padding-top: 5rem; }
     .master-cards-wrapper { display: flex; gap: 20px; justify-content: space-between; margin-top: 2rem; flex-wrap: wrap; }
-    .master-card {
-      flex: 1; min-width: 260px; background: #fff; border: 1px solid #ddd;
-      border-radius: 10px; padding: 8rem; text-align: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1); display: flex;
-      flex-direction: column; justify-content: center; cursor:pointer;
-    }
-    .master-card h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #333; }
+    .master-card { flex: 1; min-width: 260px; background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 6rem 2rem; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); cursor:pointer; }
+    .master-card h2 { font-size: 1.2rem; margin-bottom: 0; color: #333; }
     @media (max-width: 768px){ .master-cards-wrapper{ flex-direction: column; } }
 
     /* MODAL */
     .master-modal { display:none; position:fixed; z-index:1000; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
-    .master-modal-content { background:#fff; width:80%; max-height:80%; overflow-y:auto; padding:20px; border-radius:10px; }
+    .master-modal-content { background:#fff; width:90%; max-width:1100px; max-height:85%; overflow-y:auto; padding:20px; border-radius:10px; }
     .master-modal-header{ display:flex; justify-content:space-between; align-items:center; }
-    .master-close, .master-close-user { cursor:pointer; font-size:20px; font-weight:bold; } /* Adicionado .master-close-user */
+    .master-close, .master-close-user, .master-close-analise { cursor:pointer; font-size:20px; font-weight:bold; }
     table.master-table{ width:100%; border-collapse:collapse; margin-top:1rem; }
-    table.master-table th, table.master-table td{ border:1px solid #ddd; padding:10px; text-align:left; }
+    table.master-table th, table.master-table td{ border:1px solid #ddd; padding:10px; text-align:left; vertical-align: middle; }
     table.master-table th{ background:#f5f5f5; }
-    .action-btn{ padding:5px 10px; margin:0 3px; border:none; border-radius:5px; cursor:pointer; }
+    .action-btn{ padding:6px 10px; margin:0 3px; border:none; border-radius:5px; cursor:pointer; }
     .btn-ativar{ background:#28a745; color:white; }
     .btn-inativar{ background:#ffc107; color:white; }
     .btn-excluir{ background:#dc3545; color:white; }
     .btn-info{ background:#007bff; color:white; }
-    .extra-info{ display:none; font-size:0.9em; margin-top:5px; }
+    .extra-info{ display:none; font-size:0.95em; margin-top:5px; background:#fafafa; padding:10px; border-radius:6px; }
+    .small { font-size:0.9em; color:#666; }
   </style>
 </head>
 <body class="admin-page">
   <header class="admin-header">
     <div class="container">
-      <div class="logo"><img src="../img/logoplatafood.png" alt="Logo"></div>
+      <div class="logo"><img src="../img/logoplatafood.png" alt="Logo" style="height:40px;"></div>
       <nav><a href="logout.php">Sair</a></nav>
     </div>
   </header>
 
   <main class="master-container">
-    <?php echo $mensagem; ?>
+    <?= $mensagem ?>
 
     <div class="master-cards-wrapper">
-      <div class="master-card"><h2>Analise cadastro loja</h2></div>
+      <div class="master-card" id="abrir-modal-analise"><h2>Análise cadastro loja</h2></div>
       <div class="master-card" id="abrir-modal-lojas"><h2>Lojas Cadastradas</h2></div>
       <div class="master-card" id="abrir-modal-usuarios"><h2>Usuários Cadastrados</h2></div>
     </div>
   </main>
 
-  <div id="modal-lojas" class="master-modal">
+  <!-- MODAL ANÁLISE DE LOJAS (pendentes) -->
+  <div id="modal-analise" class="master-modal">
     <div class="master-modal-content">
       <div class="master-modal-header">
-        <h2>Gerenciar Lojas</h2>
-        <span class="master-close">&times;</span>
+        <h2>Lojas pendentes de aprovação</h2>
+        <span class="master-close-analise">&times;</span>
       </div>
+
       <table class="master-table">
         <thead>
-          <tr><th>ID</th><th>Nome</th><th>Status</th><th>Ações</th></tr>
+          <tr><th>ID</th><th>Nome</th><th>Status</th><th>Data Cadastro</th><th>Ações</th></tr>
         </thead>
         <tbody>
-          <?php foreach($lojas as $loja): ?>
-            <tr>
-              <td><?= $loja['id'] ?></td>
-              <td><?= htmlspecialchars($loja['nome']) ?></td>
-              <td><?= $loja['ativa'] ? 'Ativa' : 'Inativa' ?></td>
-              <td>
-                <form method="POST" style="display:inline;">
-                  <input type="hidden" name="loja_id_toggle" value="<?= $loja['id'] ?>">
-                  <input type="hidden" name="current_status" value="<?= $loja['ativa'] ?>">
-                  <button type="submit" name="toggle_loja_status" class="action-btn <?= $loja['ativa']?'btn-inativar':'btn-ativar' ?>">
-                    <?= $loja['ativa']?'Inativar':'Ativar' ?>
-                  </button>
-                </form>
-                <form method="POST" style="display:inline;" onsubmit="return confirm('Excluir esta loja?')">
-                  <input type="hidden" name="loja_id_excluir" value="<?= $loja['id'] ?>">
-                  <button type="submit" name="excluir_loja" class="action-btn btn-excluir">Excluir</button>
-                </form>
-                <button type="button" class="action-btn btn-info" onclick="toggleExtraInfo('loja-<?= $loja['id'] ?>')">Ver mais</button>
-              </td>
-            </tr>
-            <tr id="extra-loja-<?= $loja['id'] ?>" class="extra-info">
-              <td colspan="4">
-                <strong>ID Loja:</strong> <?= $loja['id'] ?><br>
-                <?php foreach($admins as $admin): ?>
-                  <?php if($admin['loja_id']==$loja['id']): ?>
-                    <strong>ID Admin:</strong> <?= $admin['id'] ?><br>
-                    <strong>Email:</strong> <?= htmlspecialchars($admin['email']) ?><br>
-                  <?php endif; ?>
-                <?php endforeach; ?>
-              </td>
-            </tr>
-          <?php endforeach; ?>
+          <?php if (count($lojas_pendentes) === 0): ?>
+            <tr><td colspan="5" style="text-align:center;">Nenhuma loja pendente de aprovação.</td></tr>
+          <?php else: ?>
+            <?php foreach($lojas_pendentes as $loja): ?>
+              <tr>
+                <td><?= $loja['id'] ?></td>
+                <td><?= htmlspecialchars($loja['nome']) ?></td>
+                <td class="small">Pendente</td>
+                <td class="small"><?= date('d/m/Y H:i', strtotime($loja['data_criacao'])) ?></td>
+                <td>
+                  <form method="POST" style="display:inline;">
+                    <input type="hidden" name="loja_id_aprovar" value="<?= $loja['id'] ?>">
+                    <button type="submit" name="aprovar_loja" class="action-btn btn-ativar">Aprovar</button>
+                  </form>
+
+                  <form method="POST" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja recusar/excluir esta loja?')">
+                    <input type="hidden" name="loja_id_excluir" value="<?= $loja['id'] ?>">
+                    <button type="submit" name="excluir_loja" class="action-btn btn-excluir">Recusar / Excluir</button>
+                  </form>
+
+                  <button type="button" class="action-btn btn-info" onclick="toggleExtraInfo('analise-<?= $loja['id'] ?>')">Ver mais</button>
+                </td>
+              </tr>
+
+              <tr id="extra-analise-<?= $loja['id'] ?>" class="extra-info">
+                <td colspan="5">
+                  <strong>ID Loja:</strong> <?= $loja['id'] ?><br>
+                  <strong>ID Admin:</strong> <?= $loja['admin_id'] ?? '—' ?><br>
+                  <strong>Email Admin:</strong> <?= htmlspecialchars($loja['admin_email'] ?? ($loja['email'] ?? '—')) ?><br>
+                  <strong>Endereço:</strong> <?= htmlspecialchars($loja['endereco'] ?? '—') ?><br>
+                  <strong>Bairro:</strong> <?= htmlspecialchars($loja['bairro'] ?? '—') ?><br>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          <?php endif; ?>
         </tbody>
       </table>
     </div>
   </div>
 
+  <!-- MODAL LOJAS CADASTRADAS (aprovadas) -->
+  <div id="modal-lojas" class="master-modal">
+    <div class="master-modal-content">
+      <div class="master-modal-header">
+        <h2>Lojas Aprovadas</h2>
+        <span class="master-close">&times;</span>
+      </div>
+
+      <table class="master-table">
+        <thead>
+          <tr><th>ID</th><th>Nome</th><th>Status</th><th>Data Cadastro</th><th>Ações</th></tr>
+        </thead>
+        <tbody>
+          <?php if (count($lojas) === 0): ?>
+            <tr><td colspan="5" style="text-align:center;">Nenhuma loja aprovada cadastrada.</td></tr>
+          <?php else: ?>
+            <?php foreach($lojas as $loja): ?>
+              <tr>
+                <td><?= $loja['id'] ?></td>
+                <td><?= htmlspecialchars($loja['nome']) ?></td>
+                <td class="small"><?= $loja['ativa'] ? 'Ativa' : 'Inativa' ?></td>
+                <td class="small"><?= date('d/m/Y H:i', strtotime($loja['data_criacao'])) ?></td>
+                <td>
+                  <form method="POST" style="display:inline;">
+                    <input type="hidden" name="loja_id_toggle" value="<?= $loja['id'] ?>">
+                    <input type="hidden" name="current_status" value="<?= $loja['ativa'] ?>">
+                    <button type="submit" name="toggle_loja_status" class="action-btn <?= $loja['ativa'] ? 'btn-inativar' : 'btn-ativar' ?>">
+                      <?= $loja['ativa'] ? 'Inativar' : 'Ativar' ?>
+                    </button>
+                  </form>
+
+                  <form method="POST" style="display:inline;" onsubmit="return confirm('Excluir esta loja aprovada?')">
+                    <input type="hidden" name="loja_id_excluir" value="<?= $loja['id'] ?>">
+                    <button type="submit" name="excluir_loja" class="action-btn btn-excluir">Excluir</button>
+                  </form>
+
+                  <button type="button" class="action-btn btn-info" onclick="toggleExtraInfo('loja-<?= $loja['id'] ?>')">Ver mais</button>
+                </td>
+              </tr>
+
+              <tr id="extra-loja-<?= $loja['id'] ?>" class="extra-info">
+                <td colspan="5">
+                  <strong>ID Loja:</strong> <?= $loja['id'] ?><br>
+                  <strong>ID Admin:</strong> <?= $loja['admin_id'] ?? '—' ?><br>
+                  <strong>Email Admin:</strong> <?= htmlspecialchars($loja['admin_email'] ?? '—') ?><br>
+                  <strong>Endereço:</strong> <?= htmlspecialchars($loja['endereco'] ?? '—') ?><br>
+                  <strong>Bairro:</strong> <?= htmlspecialchars($loja['bairro'] ?? '—') ?><br>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MODAL USUÁRIOS (mantido) -->
   <div id="modal-usuarios" class="master-modal">
     <div class="master-modal-content">
       <div class="master-modal-header">
@@ -206,9 +280,7 @@ if (!isset($_SESSION['inactive_users'])) {
         </thead>
         <tbody>
           <?php foreach($usuarios as $usuario): ?>
-            <?php
-              $is_inactive = isset($_SESSION['inactive_users'][$usuario['id']]);
-            ?>
+            <?php $is_inactive = isset($_SESSION['inactive_users'][$usuario['id']]); ?>
             <tr>
               <td><?= $usuario['id'] ?></td>
               <td><?= htmlspecialchars($usuario['nome']) ?></td>
@@ -221,7 +293,7 @@ if (!isset($_SESSION['inactive_users'])) {
                     <?= $is_inactive ? 'Ativar' : 'Inativar' ?>
                   </button>
                 </form>
-                <form method="POST" style="display:inline;" onsubmit="return confirm('Tem certeza? Excluir um usuário removerá também todos os seus pedidos.')">
+                <form method="POST" style="display:inline;" onsubmit="return confirm('Excluir este usuário?')">
                   <input type="hidden" name="usuario_id_excluir" value="<?= $usuario['id'] ?>">
                   <button type="submit" name="excluir_usuario" class="action-btn btn-excluir">Excluir</button>
                 </form>
@@ -242,32 +314,39 @@ if (!isset($_SESSION['inactive_users'])) {
   </div>
 
   <script>
-    // Script para Modal Lojas
-    const modal = document.getElementById("modal-lojas");
-    const btn = document.getElementById("abrir-modal-lojas");
-    const span = document.querySelector(".master-close");
+    // === Modal Análise ===
+    const modalAnalise = document.getElementById("modal-analise");
+    document.getElementById("abrir-modal-analise").onclick = () => modalAnalise.style.display = "flex";
+    document.querySelector(".master-close-analise").onclick = () => modalAnalise.style.display = "none";
 
-    btn.onclick = () => { modal.style.display = "flex"; }
-    span.onclick = () => { modal.style.display = "none"; }
-    window.addEventListener("click", (e) => { if (e.target == modal) { modal.style.display = "none"; } });
+    // === Modal Lojas ===
+    const modalLojas = document.getElementById("modal-lojas");
+    document.getElementById("abrir-modal-lojas").onclick = () => modalLojas.style.display = "flex";
+    document.querySelector(".master-close").onclick = () => modalLojas.style.display = "none";
 
-    // Script para o Modal de Usuários
+    // === Modal Usuários ===
     const modalUser = document.getElementById("modal-usuarios");
-    const btnUser = document.getElementById("abrir-modal-usuarios");
-    const spanUser = document.querySelector(".master-close-user");
+    document.getElementById("abrir-modal-usuarios").onclick = () => modalUser.style.display = "flex";
+    document.querySelector(".master-close-user").onclick = () => modalUser.style.display = "none";
 
-    btnUser.onclick = () => { modalUser.style.display = "flex"; }
-    spanUser.onclick = () => { modalUser.style.display = "none"; }
-    window.addEventListener("click", (e) => { 
-        if (e.target == modalUser) { 
-            modalUser.style.display = "none"; 
-        }
+    // Fechar modal clicando fora
+    window.addEventListener("click", (e) => {
+      if (e.target == modalAnalise) modalAnalise.style.display = "none";
+      if (e.target == modalLojas) modalLojas.style.display = "none";
+      if (e.target == modalUser) modalUser.style.display = "none";
     });
 
-    // Função genérica para mostrar/esconder informações extras para Lojas e Usuários
-    function toggleExtraInfo(id){
-      const row = document.getElementById("extra-"+id);
-      row.style.display = (row.style.display === "table-row") ? "none" : "table-row";
+    // Mostrar/Esconder detalhes
+    function toggleExtraInfo(id) {
+      const row = document.getElementById("extra-" + id);
+      if (!row) return;
+      row.style.display = (row.style.display === "table-row" || row.style.display === "block") ? "none" : "table-row";
+      // Para tabelas em alguns navegadores, forçar display table-row funciona melhor:
+      if (row.style.display === "table-row") {
+        // ok
+      } else if (row.style.display === "block") {
+        row.style.display = "table-row";
+      }
     }
   </script>
 </body>

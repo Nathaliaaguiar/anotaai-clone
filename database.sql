@@ -573,3 +573,4 @@ ADD COLUMN endereco TEXT NULL AFTER telefone,
 ADD COLUMN bairro VARCHAR(100) NULL AFTER endereco,
 ADD COLUMN data_analise TIMESTAMP NULL AFTER data_criacao,
 ADD COLUMN observacao_analise TEXT NULL AFTER data_analise;
+ADD COLUMN status_analise ENUM('pendente','aprovada','reprovada') NOT NULL DEFAULT 'pendente' AFTER observacao_analise;
