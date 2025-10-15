@@ -1,117 +1,89 @@
 <?php
-// SUA LÓGICA ORIGINAL E FUNCIONAL VEM PRIMEIRO (ESSA É A CHAVE)
-require_once __DIR__ . '/../includes/header.php'; // O header é chamado depois, como no seu original
+require_once __DIR__ . '/../includes/header.php';
 
-// --- Lógica para Adicionar ao Carrinho ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_carrinho_modal'])) {
-    // ADICIONADO: Pega o ID da loja do formulário para o redirecionamento
-    $loja_id_redirect = $_POST['loja_id'] ?? 1;
+// Função para verificar se a loja está aberta, agora 100% compatível com a sua base de dados
+function verificarLojaAberta($pdo, $loja_id) {
+    $dias_semana = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+    // Garante que a hora do servidor corresponde à sua localização
+    date_default_timezone_set('America/Sao_Paulo'); 
+    $dia_atual = $dias_semana[date('w')];
+    $hora_atual = date('H:i:s');
 
-    // ADICIONADO: Limpa o carrinho se o cliente estiver trocando de loja
-    if (isset($_SESSION['carrinho_loja_id']) && $_SESSION['carrinho_loja_id'] != $loja_id_redirect) {
-        $_SESSION['carrinho'] = [];
+    // [CORREÇÃO DO ERRO FATAL]
+    // Removemos a coluna 'funciona' da consulta, pois ela não existe na sua tabela.
+    $stmt = $pdo->prepare("SELECT horario_abertura, horario_fechamento FROM horarios_funcionamento WHERE loja_id = ? AND dia_semana = ?");
+    $stmt->execute([$loja_id, $dia_atual]);
+    $horario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // [LÓGICA CORRIGIDA]
+    // A loja está aberta se:
+    // 1. Encontrarmos um horário para o dia de hoje.
+    // 2. O horário de abertura NÃO for nulo.
+    // 3. A hora atual estiver entre a abertura e o fecho.
+    if ($horario && $horario['horario_abertura'] !== null && $hora_atual >= $horario['horario_abertura'] && $hora_atual <= $horario['horario_fechamento']) {
+        return true; // Aberta
     }
-    $_SESSION['carrinho_loja_id'] = $loja_id_redirect;
-
     
-    $produto_id = $_POST['produto_id'];
-    $quantidade = $_POST['quantidade'] ?? 1;
-    $observacao = $_POST['observacao'] ?? '';
-    $opcao_id = $_POST['opcao_id'] ?? null;
-    $opcao_nome = null;
-    $opcao_preco_adicional = 0;
-    if ($opcao_id) {
-        $stmt_op = $pdo->prepare("SELECT nome_opcao, preco_adicional FROM produto_opcoes WHERE id = ?");
-        $stmt_op->execute([$opcao_id]);
-        $opcao_info = $stmt_op->fetch();
-        if ($opcao_info) {
-            $opcao_nome = $opcao_info['nome_opcao'];
-            $opcao_preco_adicional = $opcao_info['preco_adicional'];
-        }
-    }
-    $item_carrinho_id = uniqid('item_'); 
-    $_SESSION['carrinho'][$item_carrinho_id] = [
-        'produto_id' => $produto_id, 'quantidade' => $quantidade, 'observacao' => trim($observacao),
-        'opcao_id' => $opcao_id, 'opcao_nome' => $opcao_nome, 'opcao_preco_adicional' => $opcao_preco_adicional
-    ];
-    // MODIFICADO: Redireciona para a URL da loja correta
-    header('Location: index.php?id=' . $loja_id_redirect . '&item_adicionado=true');
-    exit();
+    return false; // Fechada em todos os outros casos
 }
 
-// ADICIONADO: Identifica a loja que está sendo visualizada
-$loja_id = $_GET['id'] ?? 1; // Padrão para loja 1 se nenhum ID for passado
-$_SESSION['loja_id_visitada'] = $loja_id;
-
-// MODIFICADO: Busca categorias apenas da loja selecionada
-$stmt_categorias = $pdo->prepare("SELECT * FROM categorias WHERE loja_id = ? ORDER BY nome ASC");
-$stmt_categorias->execute([$loja_id]);
-$categorias = $stmt_categorias->fetchAll(PDO::FETCH_ASSOC);
-
-$categoria_selecionada_id = $_GET['categoria_id'] ?? 'todos';
-
-// MODIFICADO: Busca produtos apenas da loja selecionada
-$sql_produtos = "SELECT p.*, c.nome as nome_categoria FROM produtos p LEFT JOIN categorias c ON p.categoria_id = c.id WHERE p.ativo = 1 AND p.loja_id = ?";
-$params = [$loja_id];
-if ($categoria_selecionada_id !== 'todos') {
-    $sql_produtos .= " AND p.categoria_id = ?";
-    $params[] = $categoria_selecionada_id;
-}
-$stmt_produtos = $pdo->prepare($sql_produtos);
-$stmt_produtos->execute($params);
-$produtos = $stmt_produtos->fetchAll(PDO::FETCH_ASSOC);
-
-// MODIFICADO: Busca opções de produtos apenas da loja selecionada
-$stmt_opcoes = $pdo->prepare("SELECT po.* FROM produto_opcoes po JOIN produtos p ON po.produto_id = p.id WHERE p.loja_id = ?");
-$stmt_opcoes->execute([$loja_id]);
-$opcoes_raw = $stmt_opcoes->fetchAll(PDO::FETCH_ASSOC);
-$opcoes_produtos = [];
-foreach ($opcoes_raw as $opcao) {
-    $opcoes_produtos[$opcao['produto_id']][] = $opcao;
+// Busca todas as lojas ativas e aprovadas
+try {
+    $stmt_lojas = $pdo->prepare("SELECT id, nome, endereco, bairro FROM lojas WHERE aprovado = 1 AND ativa = 1 ORDER BY nome ASC");
+    $stmt_lojas->execute();
+    $lojas = $stmt_lojas->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die("Erro ao buscar lojas: " . $e->getMessage());
 }
 ?>
+<style>
+    .lojas-container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+    .lojas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+    .loja-card { border: 1px solid #eee; border-radius: 12px; overflow: hidden; text-decoration: none; color: #333; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: all 0.2s ease; display: flex; flex-direction: column; }
+    .loja-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+    .loja-logo-wrapper { width: 100%; height: 150px; background-color: #f7f7f7; display: flex; align-items: center; justify-content: center; }
+    .loja-logo { max-width: 90%; max-height: 90%; object-fit: contain; }
+    .loja-info { padding: 1rem; position: relative; flex-grow: 1; display: flex; flex-direction: column; }
+    .loja-info h3 { margin: 0 0 0.5rem 0; font-size: 1.2rem; }
+    .loja-info p { margin: 0; color: #777; font-size: 0.9rem; }
+    .status-loja { position: absolute; top: 1rem; right: 1rem; padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
+    .status-aberta { background-color: #d4edda; color: #155724; }
+    .status-fechada { background-color: #f8d7da; color: #721c24; }
+</style>
 
-<section class="cardapio">
-    <div class="filtros-categoria">
-        <a href="index.php?id=<?php echo $loja_id; ?>" class="<?php echo $categoria_selecionada_id == 'todos' ? 'active' : ''; ?>">Todos</a>
-        <?php foreach ($categorias as $categoria): ?>
-            <a href="index.php?id=<?php echo $loja_id; ?>&categoria_id=<?php echo $categoria['id']; ?>" class="<?php echo $categoria_selecionada_id == $categoria['id'] ? 'active' : ''; ?>">
-                <?php echo htmlspecialchars($categoria['nome']); ?>
-            </a>
-        <?php endforeach; ?>
+<main class="lojas-container">
+    <h1>Lojas Disponíveis</h1>
+    <p>Escolha uma loja para ver o cardápio e fazer o seu pedido.</p>
+
+    <div class="lojas-grid">
+        <?php if (empty($lojas)): ?>
+            <p>Nenhuma loja disponível no momento.</p>
+        <?php else: ?>
+            <?php foreach ($lojas as $loja): ?>
+                <?php
+                    $estaAberta = verificarLojaAberta($pdo, $loja['id']);
+                    $statusClasse = $estaAberta ? 'status-aberta' : 'status-fechada';
+                    $statusTexto = $estaAberta ? 'Aberta' : 'Fechada';
+                ?>
+                <a href="loja_menu.php?loja_id=<?= $loja['id'] ?>" class="loja-card">
+                    <div class="loja-logo-wrapper">
+                        <img src="../img/logo_loja_<?= $loja['id'] ?>.png" 
+                             alt="Logo da loja <?= htmlspecialchars($loja['nome']) ?>" 
+                             class="loja-logo"
+                             onerror="this.onerror=null;this.src='https://placehold.co/200x150/f0f0f0/333?text=Logo'">
+                    </div>
+                    <div class="loja-info">
+                        <span class="status-loja <?= $statusClasse ?>"><?= $statusTexto ?></span>
+                        <h3><?= htmlspecialchars($loja['nome']) ?></h3>
+                        <p><?= htmlspecialchars($loja['bairro']) ?></p>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
-    <div class="produtos-grid">
-        <?php foreach ($produtos as $produto): ?>
-            <div class="produto-card">
-                <img src="../img/<?php echo htmlspecialchars($produto['imagem']); ?>" alt="<?php echo htmlspecialchars($produto['nome']); ?>">
-                <h3><?php echo htmlspecialchars($produto['nome']); ?></h3>
-                <p class="produto-descricao"><?php echo htmlspecialchars($produto['descricao']); ?></p>
-                <p class="produto-preco">R$ <?php echo number_format($produto['preco'], 2, ',', '.'); ?></p>
-                <button class="btn btn-abrir-modal" data-id="<?php echo $produto['id']; ?>" data-categoria-id="<?php echo $produto['categoria_id']; ?>">Adicionar</button>
-            </div>
-        <?php endforeach; ?>
-    </div>
-</section>
-<div id="modal-observacao" class="modal">
-    <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <h2 id="modal-produto-nome"></h2>
-        <form action="index.php" method="POST">
-             <input type="hidden" name="loja_id" value="<?php echo $loja_id; ?>">
-            <input type="hidden" name="produto_id" id="modal-produto-id">
-            <input type="hidden" name="categoria_id_produto" id="modal-categoria-id">
-            <input type="hidden" name="opcao_id" id="modal-opcao-id">
-            <div id="modal-opcoes-container"></div>
-            <div class="form-group"><label for="quantidade">Quantidade:</label><input type="number" id="quantidade" name="quantidade" value="1" min="1"></div>
-            <div class="form-group"><label for="observacao">Observações:</label><textarea name="observacao" id="observacao" rows="3" placeholder="Ex: Tirar a cebola..."></textarea></div>
-            <div class="modal-total-preco">Total: <span id="modal-preco-total">R$ 0,00</span></div>
-            <button type="submit" name="add_carrinho_modal" class="btn">Adicionar ao Carrinho</button>
-        </form>
-    </div>
-</div>
-<script>
-    const produtosData = <?php echo json_encode(array_map(function($p) { return ['id' => $p['id'], 'nome' => $p['nome'], 'preco' => $p['preco']]; }, $produtos)); ?>;
-    const opcoesData = <?php echo json_encode($opcoes_produtos); ?>;
-</script>
-<script src="../js/script.js"></script>
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+</main>
+
+<?php
+require_once __DIR__ . '/../includes/footer.php';
+?>
+

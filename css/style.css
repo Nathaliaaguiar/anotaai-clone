@@ -1600,3 +1600,123 @@ p.error {
     max-width: 80px; /* Ajuste o tamanho conforme necessário */
     height: auto;
 }
+/* Cestilo para os formularios de login e cadstro*/
+.auth-container {
+display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 950px;
+  width: 90%;
+
+}
+
+/* Cada bloco (login / cadastro) */
+.form-wrapper {
+  background: #fafafa;
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 140, 0, 0.2);
+  box-shadow: 0 0 15px rgba(255, 140, 0, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  flex: 1; /* valor padrão */
+}
+
+/* 🔸 O BLOCO DE LOGIN MENOR */
+.auth-container .form-wrapper:first-child {
+  flex: 0.7; /* menor que o cadastro */
+  max-width: 360px; /* força o tamanho menor */
+}
+
+/* Efeito hover */
+.form-wrapper:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 25px rgba(255, 140, 0, 0.4);
+}
+
+/* Títulos */
+.form-wrapper h2 {
+  text-align: center;
+  color: #ff7a00;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/* Campos */
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: #444;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.8rem;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  color: #222;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group input:focus {
+  border-color: #ff8c00;
+  box-shadow: 0 0 8px rgba(255, 140, 0, 0.3);
+  outline: none;
+}
+
+/* Botões */
+.btn {
+  width: 100%;
+  padding: 0.9rem;
+  background: linear-gradient(135deg, #ff8c00, #ff6500);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.btn:hover {
+  background: linear-gradient(135deg, #ffa733, #ff7b00);
+  transform: translateY(-2px);
+}
+
+/* Mensagens de erro */
+.error {
+  background: rgba(255, 100, 100, 0.1);
+  color: #d33;
+  border-left: 4px solid #ff5555;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+/* Responsividade */
+@media (max-width: 900px) {
+  body {
+    padding-top: 40px;
+  }
+
+  .auth-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .auth-container .form-wrapper:first-child {
+    max-width: 100%;
+    flex: 1;
+  }
+}

@@ -1,16 +1,17 @@
 <?php
-require_once 'includes/header.php';
-require_once 'includes/auth_check.php';
+// O verificador de segurança DEVE ser a primeira coisa a ser executada.
+require_once 'includes/auth_check.php'; 
 
-// ADICIONADO: A "chave mestra" que identifica a loja do admin logado
-$loja_id = $_SESSION['admin_loja_id'];
+// O header e o resto do código só são processados se o auth_check.php permitir.
+require_once 'includes/header.php';
+
+// A variável $loja_id agora é definida com segurança dentro de 'auth_check.php'.
 $mensagem = '';
 
-// --- LÓGICA UNIFICADA PARA ATUALIZAR CONFIGURAÇÕES ---
+// --- LÓGICA PARA ATUALIZAR CONFIGURAÇÕES ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['nome_loja'])) {
         $nome_loja = trim($_POST['nome_loja']);
-        // MODIFICADO: A query agora funciona para qualquer loja e cria o campo se não existir
         $stmt = $pdo->prepare("INSERT INTO configuracoes (loja_id, chave, valor) VALUES (?, 'nome_loja', ?) ON DUPLICATE KEY UPDATE valor = ?");
         if ($stmt->execute([$loja_id, $nome_loja, $nome_loja])) {
             $mensagem = '<p class="success">Nome da loja atualizado com sucesso!</p>';
@@ -20,7 +21,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (isset($_FILES['logo_loja']) && $_FILES['logo_loja']['error'] === UPLOAD_ERR_OK) {
         $arquivo = $_FILES['logo_loja'];
-        // MODIFICADO: O nome do arquivo da logo agora é único para cada loja
         $destino = __DIR__ . '/../img/logo_loja_' . $loja_id . '.png';
         if (move_uploaded_file($arquivo['tmp_name'], $destino)) {
             $mensagem = '<p class="success">Logo da loja atualizada com sucesso!</p>';
@@ -30,8 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// --- Busca de Dados para o Dashboard ---
-// MODIFICADO: Todas as consultas agora filtram pelo loja_id
+// --- BUSCA DE DADOS PARA O DASHBOARD ---
 $stmt_pedidos = $pdo->prepare("SELECT COUNT(*) FROM pedidos WHERE DATE(data) = CURDATE() AND loja_id = ?");
 $stmt_pedidos->execute([$loja_id]);
 $pedidos_hoje = $stmt_pedidos->fetchColumn();
@@ -51,14 +50,13 @@ $nome_loja_atual = $configs_lista['nome_loja'] ?? 'Minha Loja';
 
 $labels_grafico = []; $valores_grafico = [];
 try {
-    // MODIFICADO: A consulta do gráfico agora filtra pelo loja_id
-    $stmt_grafico = $pdo->prepare("SELECT YEAR(data) as ano, MONTH(data) as mes, SUM(total) as faturamento_mensal FROM pedidos WHERE status = 'entregue' AND loja_id = ? AND data IS NOT NULL AND data > '1971-01-01' GROUP BY YEAR(data), MONTH(data) ORDER BY ano, mes LIMIT 12");
+    $stmt_grafico = $pdo->prepare("SELECT YEAR(data) as ano, MONTH(data) as mes, SUM(total) as faturamento_mensal FROM pedidos WHERE status = 'entregue' AND loja_id = ? AND data >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) GROUP BY YEAR(data), MONTH(data) ORDER BY ano, mes");
     $stmt_grafico->execute([$loja_id]);
     $dados_grafico = $stmt_grafico->fetchAll(PDO::FETCH_ASSOC);
     if ($dados_grafico) {
         $meses = ['', 'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
         foreach ($dados_grafico as $dado) {
-            $labels_grafico[] = $meses[(int)$dado['mes']] . '/' . $dado['ano'];
+            $labels_grafico[] = $meses[(int)$dado['mes']] . '/' . substr($dado['ano'], -2);
             $valores_grafico[] = $dado['faturamento_mensal'];
         }
     }
@@ -76,11 +74,11 @@ $valores_json = json_encode($valores_grafico);
         <div class="stat-card"><h2>Produtos Ativos</h2><p><?php echo $produtos_ativos; ?></p></div>
     </div>
     <div class="grafico-container">
-        <h2>Faturamento Mensal (Pedidos Entregues)</h2>
+        <h2>Faturamento Mensal (Últimos 12 Meses)</h2>
         <?php if (!empty($labels_grafico)): ?>
             <canvas id="graficoFaturamentoMensal"></canvas>
         <?php else: ?>
-            <div class="aviso-sem-dados"><p>Ainda não há dados de faturamento para exibir.</p><small>O gráfico aparecerá aqui quando você tiver pedidos com o status "Entregue".</small></div>
+            <div class="aviso-sem-dados"><p>Ainda não há dados de faturamento para exibir.</p><small>O gráfico aparecerá aqui quando tiver pedidos com o status "Entregue".</small></div>
         <?php endif; ?>
     </div>
     <div class="config-grid">
@@ -131,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderWidth: 1
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, layout: { padding: 28 }, scales: { y: { beginAtZero: true, ticks: { color: fontColor, callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') } }, x: { ticks: { color: fontColor } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `R$ ${c.parsed.y.toLocaleString('pt-BR', {minimumFractionDigits: 2})}` } } } }
+            options: { responsive: true, maintainAspectRatio: false, layout: { padding: 10 }, scales: { y: { beginAtZero: true, ticks: { color: fontColor, callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') } }, x: { ticks: { color: fontColor } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `R$ ${c.parsed.y.toLocaleString('pt-BR', {minimumFractionDigits: 2})}` } } } }
         });
     }
     const themeRadios = document.querySelectorAll('input[name="theme_selector"]');
@@ -140,17 +138,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (radioToSelect) { radioToSelect.checked = true; }
     themeRadios.forEach(radio => {
         radio.addEventListener('change', function() {
-            const selectedTheme = this.value;
-            localStorage.setItem('adminTheme', selectedTheme);
-            document.documentElement.className = selectedTheme;
+            localStorage.setItem('adminTheme', this.value);
+            document.documentElement.className = this.value;
             location.reload(); 
         });
     });
 });
 </script>
 <style>
-.config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-top: 2.5rem; }
-.aviso-sem-dados { text-align: center; padding: 40px; color: var(--admin-text, #888); }
-.aviso-sem-dados p { font-size: 1.2rem; font-weight: 500; }
+.config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-top: 2.5rem; }
+.aviso-sem-dados { text-align: center; padding: 40px; color: var(--admin-text-light, #888); background: var(--admin-bg-light, #f9f9f9); border-radius: 8px; }
+.aviso-sem-dados p { font-size: 1.1rem; font-weight: 500; margin: 0; }
 </style>
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

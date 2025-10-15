@@ -15,43 +15,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $super_admin = $stmt->fetch();
 
     if ($super_admin && password_verify($senha, $super_admin['senha'])) {
-        // Sucesso! Guarda o ID do super admin na sessão
         $_SESSION['super_admin_id'] = $super_admin['id'];
         header('Location: dashboard.php');
         exit;
     } else {
-        $erro = 'Email ou senha de super admin inválidos.';
+        $erro = 'Credenciais de acesso inválidas.';
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Super Admin</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="./css/index.css">
 </head>
-<body class="login-page">
+<body class="superadmin-login">
+
     <div class="login-container">
+        
+        <div class="logo"><span>Plata</span>food</div>
         <h1>Painel Master</h1>
-        <p>Acesso restrito ao administrador da plataforma.</p>
-        <br>
+        <p>Acesso restrito ao administrador.</p>
+        
         <?php if ($erro): ?>
-            <p class="error"><?php echo $erro; ?></p>
+            <p class="error"><?php echo htmlspecialchars($erro); ?></p>
         <?php endif; ?>
+        
         <form action="index.php" method="POST">
             <div class="form-group">
-                <label for="email">Email</label>
+                <label for="email">E-mail Corporativo</label>
                 <input type="email" name="email" id="email" required>
             </div>
             <div class="form-group">
-                <label for="senha">Senha</label>
+                <label for="senha">Senha de Acesso</label>
                 <input type="password" name="senha" id="senha" required>
             </div>
-            <button type="submit" class="btn">Entrar</button>
+            <button type="submit" class="btn">Acessar Painel</button>
         </form>
     </div>
+
 </body>
 </html>

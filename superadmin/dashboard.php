@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // --- Consultas: lojas pendentes (aprovado = 0) e lojas aprovadas (aprovado = 1) ---
 // Pegamos também email/id do admin associado (LEFT JOIN para não quebrar se não houver admin)
 $stmt_lista_pendentes = $pdo->query("
-    SELECT l.id, l.nome, l.email, l.endereco, l.bairro, l.data_criacao, a.id as admin_id, a.email as admin_email
+    SELECT l.id, l.nome, l.endereco, l.bairro, l.data_criacao, a.id as admin_id, a.email as admin_email
     FROM lojas l
     LEFT JOIN admins a ON a.loja_id = l.id
     WHERE l.aprovado = 0
@@ -115,35 +115,16 @@ if (!isset($_SESSION['inactive_users'])) {
 <head>
   <meta charset="UTF-8">
   <title>Dashboard Super Admin</title>
-  <link rel="stylesheet" href="../css/style.css">
-  <style>
-    .master-container { padding: 2rem; padding-top: 5rem; }
-    .master-cards-wrapper { display: flex; gap: 20px; justify-content: space-between; margin-top: 2rem; flex-wrap: wrap; }
-    .master-card { flex: 1; min-width: 260px; background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 6rem 2rem; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); cursor:pointer; }
-    .master-card h2 { font-size: 1.2rem; margin-bottom: 0; color: #333; }
-    @media (max-width: 768px){ .master-cards-wrapper{ flex-direction: column; } }
-
-    /* MODAL */
-    .master-modal { display:none; position:fixed; z-index:1000; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
-    .master-modal-content { background:#fff; width:90%; max-width:1100px; max-height:85%; overflow-y:auto; padding:20px; border-radius:10px; }
-    .master-modal-header{ display:flex; justify-content:space-between; align-items:center; }
-    .master-close, .master-close-user, .master-close-analise { cursor:pointer; font-size:20px; font-weight:bold; }
-    table.master-table{ width:100%; border-collapse:collapse; margin-top:1rem; }
-    table.master-table th, table.master-table td{ border:1px solid #ddd; padding:10px; text-align:left; vertical-align: middle; }
-    table.master-table th{ background:#f5f5f5; }
-    .action-btn{ padding:6px 10px; margin:0 3px; border:none; border-radius:5px; cursor:pointer; }
-    .btn-ativar{ background:#28a745; color:white; }
-    .btn-inativar{ background:#ffc107; color:white; }
-    .btn-excluir{ background:#dc3545; color:white; }
-    .btn-info{ background:#007bff; color:white; }
-    .extra-info{ display:none; font-size:0.95em; margin-top:5px; background:#fafafa; padding:10px; border-radius:6px; }
-    .small { font-size:0.9em; color:#666; }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/index.css">
+  
 </head>
 <body class="admin-page">
   <header class="admin-header">
     <div class="container">
-      <div class="logo"><img src="../img/logoplatafood.png" alt="Logo" style="height:40px;"></div>
+      <div class="logo"><img src="../img/logoplatafood.png" alt="Logo" style="height:90px;"></div>
       <nav><a href="logout.php">Sair</a></nav>
     </div>
   </header>
@@ -158,7 +139,6 @@ if (!isset($_SESSION['inactive_users'])) {
     </div>
   </main>
 
-  <!-- MODAL ANÁLISE DE LOJAS (pendentes) -->
   <div id="modal-analise" class="master-modal">
     <div class="master-modal-content">
       <div class="master-modal-header">
@@ -199,7 +179,7 @@ if (!isset($_SESSION['inactive_users'])) {
                 <td colspan="5">
                   <strong>ID Loja:</strong> <?= $loja['id'] ?><br>
                   <strong>ID Admin:</strong> <?= $loja['admin_id'] ?? '—' ?><br>
-                  <strong>Email Admin:</strong> <?= htmlspecialchars($loja['admin_email'] ?? ($loja['email'] ?? '—')) ?><br>
+                  <strong>Email Admin:</strong> <?= htmlspecialchars($loja['admin_email'] ?? '—') ?><br>
                   <strong>Endereço:</strong> <?= htmlspecialchars($loja['endereco'] ?? '—') ?><br>
                   <strong>Bairro:</strong> <?= htmlspecialchars($loja['bairro'] ?? '—') ?><br>
                 </td>
@@ -211,7 +191,6 @@ if (!isset($_SESSION['inactive_users'])) {
     </div>
   </div>
 
-  <!-- MODAL LOJAS CADASTRADAS (aprovadas) -->
   <div id="modal-lojas" class="master-modal">
     <div class="master-modal-content">
       <div class="master-modal-header">
@@ -267,7 +246,6 @@ if (!isset($_SESSION['inactive_users'])) {
     </div>
   </div>
 
-  <!-- MODAL USUÁRIOS (mantido) -->
   <div id="modal-usuarios" class="master-modal">
     <div class="master-modal-content">
       <div class="master-modal-header">
@@ -312,6 +290,7 @@ if (!isset($_SESSION['inactive_users'])) {
       </table>
     </div>
   </div>
+  
 
   <script>
     // === Modal Análise ===
@@ -349,5 +328,12 @@ if (!isset($_SESSION['inactive_users'])) {
       }
     }
   </script>
+  <footer class="platafood-footer">
+  <div class="footer-container">
+    <p>© 2025 PlataFood </p>
+    
+    </div>
+  </div>
+</footer>
 </body>
 </html>

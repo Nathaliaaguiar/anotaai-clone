@@ -1,0 +1,231 @@
+/* ==========================================================================
+   CSS COMPLETO E DEDICADO PARA A PÁGINA DE LOGIN/CADASTRO (admin/index.php)
+   ========================================================================== */
+
+/* 1. RESET GERAL E CONFIGURAÇÕES DO CORPO
+   Garante que não haverá espaços em branco nas laterais. */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+}
+
+body.login-page {
+    background-color: #f4f7f6;
+    color: #333;
+    /* Adiciona um preenchimento no topo igual (ou maior) que a altura do header
+       para que o conteúdo não comece escondido atrás dele. */
+    padding-top: 135px;
+}
+
+/* ==========================================================================
+   2. HEADER FIXO NO TOPO
+   ========================================================================== */
+
+.page-header {
+    width: 100%;
+    background: #ffffff;
+    padding: 20px 30px;
+    text-align: center;
+    border-bottom: 5px solid #e67e22; /* Laranja da marca */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+
+    /* --- Comandos para fixar o header --- */
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000; /* Garante que ele fique na frente de outros elementos */
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: black; /* Cinza-azulado escuro */
+    margin: 0;
+}
+
+/* Estilo para o "logo" com duas cores */
+.page-header h1 span {
+    color: #e67e22;
+}
+
+.page-header p {
+    font-size: 1.1rem;
+    color: #555;
+    margin-top: 5px;
+}
+
+/* ==========================================================================
+   3. CONTAINER PRINCIPAL (FORMULÁRIOS)
+   ========================================================================== */
+
+.auth-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px; /* Espaço entre os formulários */
+    flex-wrap: wrap; /* Permite que os formulários quebrem a linha em telas menores */
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto; /* Centraliza o container */
+    padding: 20px;
+}
+
+.form-wrapper {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 420px;
+    flex-grow: 1; /* Faz com que ambos os formulários tentem ocupar o espaço disponível */
+}
+
+.form-wrapper h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #333;
+    font-size: 1.8rem;
+}
+
+/* ==========================================================================
+   4. ESTILOS DOS FORMULÁRIOS (Inputs, Botões, Mensagens de Erro/Sucesso)
+   ========================================================================== */
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: bold;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="tel"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #e67e22; /* Destaque laranja ao focar */
+}
+
+.btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #e67e22;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: #d35400; /* Laranja mais escuro no hover */
+}
+
+.error, .success {
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.error {
+    color: #c0392b;
+    background-color: #f2dede;
+}
+
+.success {
+    color: #27ae60;
+    background-color: #dff0d8;
+}
+
+/* ==========================================================================
+   5. FOOTER (RODAPÉ)
+   ========================================================================== */
+
+.page-footer {
+    width: 100%;
+    background: black; /* Fundo escuro */
+    color: #ecf0f1; /* Texto claro */
+    padding: 50px 20px 20px 20px;
+    margin-top: 50px; /* Espaço acima do rodapé */
+    text-align: center;
+}
+
+.page-footer h3 {
+    font-size: 1.8rem;
+    color: #ffffff;
+    margin-bottom: 20px;
+}
+
+.page-footer p {
+    color: #bdc3c7; /* Cinza claro */
+    font-size: 1.1rem;
+}
+
+.page-footer ul {
+    list-style: none;
+    margin-top: 30px;
+    display: inline-block;
+    text-align: left;
+}
+
+.page-footer ul li {
+    margin-bottom: 15px;
+    font-size: 1rem;
+    position: relative;
+    padding-left: 30px; /* Espaço para o ícone de check */
+}
+
+/* Ícone de check customizado */
+.page-footer ul li::before {
+    content: '✓';
+    color: #27ae60; /* Verde */
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+}
+
+.page-footer .footer-bottom {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid black; /* Linha sutil de separação */
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+/* ==========================================================================
+   6. RESPONSIVIDADE PARA DESKTOP (Formulários Lado a Lado)
+   ========================================================================== */
+
+/* Esta regra só será aplicada em telas com 920px de largura ou mais */
+@media (min-width: 920px) {
+
+    .auth-container {
+        /* Impede que os formulários quebrem para a linha de baixo */
+        flex-wrap: nowrap;
+        
+        /* Alinha os dois formulários pelo topo, caso um seja maior que o outro */
+        align-items: flex-start;
+    }
+
+}

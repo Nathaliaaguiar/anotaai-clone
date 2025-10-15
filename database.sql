@@ -23,6 +23,7 @@ SET time_zone = "+00:00";
 CREATE DATABASE anotaai_clone;
 -- --------------------------------------------------------
 USE anotaai_clone;
+
 --
 -- Estrutura para tabela `admins`
 --
@@ -39,7 +40,8 @@ CREATE TABLE `admins` (
 --
 
 INSERT INTO `admins` (`id`, `loja_id`, `email`, `senha`) VALUES
-(6, 4, 'aguiar@gmail.com', '$2y$10$aND/SzBo3wd887Nh41Za.ONoX0Agwsk3Jwe9xaIx.ED60WwiFD9xy');
+(6, 4, 'aguiar@gmail.com', '$2y$10$aND/SzBo3wd887Nh41Za.ONoX0Agwsk3Jwe9xaIx.ED60WwiFD9xy'),
+(7, 5, 'prensado@gmail.com', '$2y$10$HxBnxBY2lAmeMAEjMnpJ9OHM0mtsEo.Un/e2L8Pqa9cM1oVHAq7u.');
 
 -- --------------------------------------------------------
 
@@ -78,7 +80,9 @@ CREATE TABLE `areas_entrega` (
 --
 
 INSERT INTO `areas_entrega` (`id`, `loja_id`, `bairro`, `taxa_entrega`) VALUES
-(6, 4, 'CENTRO', 8.00);
+(6, 4, 'CENTRO', 8.00),
+(7, 5, 'guacha', 0.00),
+(11, 5, 'aliança', 8.00);
 
 -- --------------------------------------------------------
 
@@ -92,6 +96,13 @@ CREATE TABLE `categorias` (
   `nome` varchar(100) NOT NULL,
   `ordem` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Despejando dados para a tabela `categorias`
+--
+
+INSERT INTO `categorias` (`id`, `loja_id`, `nome`, `ordem`) VALUES
+(6, 5, 'pizza', 0);
 
 -- --------------------------------------------------------
 
@@ -110,7 +121,12 @@ CREATE TABLE `configuracoes` (
 --
 
 INSERT INTO `configuracoes` (`loja_id`, `chave`, `valor`) VALUES
-(4, 'nome_loja', 'loja teste');
+(4, 'nome_loja', 'loja teste'),
+(5, 'bairro', 'guacha'),
+(5, 'email_contato', 'prensado@gmail.com'),
+(5, 'endereco', 'rua meridional'),
+(5, 'nome_loja', 'Prensado da Fran'),
+(5, 'telefone', '21973140724');
 
 -- --------------------------------------------------------
 
@@ -127,6 +143,19 @@ CREATE TABLE `horarios_funcionamento` (
   `horario_fechamento` time DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Despejando dados para a tabela `horarios_funcionamento`
+--
+
+INSERT INTO `horarios_funcionamento` (`id`, `loja_id`, `dia_semana`, `ativo`, `horario_abertura`, `horario_fechamento`) VALUES
+(15, 5, 0, 0, '08:00:00', '22:00:00'),
+(16, 5, 1, 0, '08:00:00', '22:00:00'),
+(17, 5, 2, 0, '08:00:00', '22:00:00'),
+(18, 5, 3, 1, '08:00:00', '10:00:00'),
+(19, 5, 4, 0, '08:00:00', '22:00:00'),
+(20, 5, 5, 0, '08:00:00', '22:00:00'),
+(21, 5, 6, 0, '08:00:00', '22:00:00');
+
 -- --------------------------------------------------------
 
 --
@@ -136,7 +165,15 @@ CREATE TABLE `horarios_funcionamento` (
 CREATE TABLE `lojas` (
   `id` int(11) NOT NULL,
   `nome` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `senha` varchar(255) NOT NULL COMMENT 'Senha com hash para o login da loja',
+  `aprovado` tinyint(1) NOT NULL DEFAULT 0,
+  `telefone` varchar(20) DEFAULT NULL,
+  `endereco` text DEFAULT NULL,
+  `bairro` varchar(100) DEFAULT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
+  `data_analise` timestamp NULL DEFAULT NULL,
+  `observacao_analise` text DEFAULT NULL,
   `ativa` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -144,8 +181,9 @@ CREATE TABLE `lojas` (
 -- Despejando dados para a tabela `lojas`
 --
 
-INSERT INTO `lojas` (`id`, `nome`, `data_criacao`, `ativa`) VALUES
-(4, 'minha loja teste', '2025-09-10 17:41:47', 1);
+INSERT INTO `lojas` (`id`, `nome`, `email`, `senha`, `aprovado`, `telefone`, `endereco`, `bairro`, `data_criacao`, `data_analise`, `observacao_analise`, `ativa`) VALUES
+(4, 'minha loja teste', '', '', 0, NULL, NULL, NULL, '2025-09-10 17:41:47', NULL, NULL, 1),
+(5, 'prensado da fran', 'prensado@gmail.com', '$2y$10$HxBnxBY2lAmeMAEjMnpJ9OHM0mtsEo.Un/e2L8Pqa9cM1oVHAq7u.', 1, '21973140724', 'rua meridional', 'guacha', '2025-10-15 17:01:19', '2025-10-15 17:26:08', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -203,7 +241,8 @@ INSERT INTO `pedidos` (`id`, `loja_id`, `usuario_id`, `data`, `status`, `total`,
 (31, NULL, 1, '2025-08-27 19:02:08', 'saiu_para_entrega', 64.00, 5.00, 'dinheiro', NULL),
 (32, NULL, 1, '2025-08-27 21:34:09', 'pendente', 15.00, 5.00, 'cartao', NULL),
 (33, 1, 1, '2025-08-27 21:41:28', 'entregue', 31.00, 5.00, 'dinheiro', NULL),
-(34, 1, 1, '2025-09-10 17:05:14', 'entregue', 12.00, 5.00, 'dinheiro', NULL);
+(34, 1, 1, '2025-09-10 17:05:14', 'entregue', 12.00, 5.00, 'dinheiro', NULL),
+(35, 5, 4, '2025-10-15 17:43:31', 'entregue', 53.00, 8.00, 'dinheiro', 50.00);
 
 -- --------------------------------------------------------
 
@@ -266,7 +305,8 @@ INSERT INTO `pedido_itens` (`id`, `pedido_id`, `produto_id`, `quantidade`, `prec
 (42, 31, 6, 1, 7.00, ''),
 (43, 31, 5, 1, 26.00, ''),
 (45, 33, 5, 1, 26.00, ''),
-(46, 34, 6, 1, 7.00, '');
+(46, 34, 6, 1, 7.00, ''),
+(47, 35, 10, 1, 45.00, '');
 
 -- --------------------------------------------------------
 
@@ -293,7 +333,8 @@ INSERT INTO `produtos` (`id`, `loja_id`, `nome`, `descricao`, `preco`, `imagem`,
 (5, 1, 'Prensado de Contra-File', 'Pão 20cm, Contrafilé, Milho, Ervilha, Batata-Palha, Cenoura ralada, Purê, Azeitona, Ovo de codorna, Passas, Queijo ralado, Molho(tomate,cebola e pimentão), ketchup, Maionese, Mostarda, Maionese caseira, Mussarela, Catupiry ou Cheddar.', 26.00, '68a62e95a21b3.jpeg', 1, NULL),
 (6, 1, 'Coca-cola', 'lata 500ml', 7.00, '68a8c2113980d.jpg', 1, NULL),
 (8, 1, 'pizza', 'pizza familia', 33.00, '68c1b1dcb7fb4.jpg', 1, NULL),
-(9, 2, 'pizza', 'grande', 33.00, '68c1c0040cbb1.jpg', 1, NULL);
+(9, 2, 'pizza', 'grande', 33.00, '68c1c0040cbb1.jpg', 1, NULL),
+(10, 5, 'pizza calabreza', 'grande', 45.00, '68efdc8e9c0e6.jpg', 1, 6);
 
 -- --------------------------------------------------------
 
@@ -359,7 +400,8 @@ CREATE TABLE `usuarios` (
 INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `endereco`, `bairro`, `telefone`, `criado_em`) VALUES
 (1, 'Nathalia aguiar', 'nathaliaaguiar444@gmail.com', '$2y$10$A32VdFIEwb198vG94GaRuOkt9WEMnev4HVnygERa.TaQXZzztBK4.', 'rua meridional numero 89 jardim paraiso', 'CENTRO', '21973140724', '2025-08-20 19:34:03'),
 (2, 'anderson martins', 'anderson@gmail.com', '$2y$10$jZmvDLFs2PxfT8Td4VcCDuASshCMducOSlDmpcg/bXcWCju2G4fCe', 'Rua Meridional número 89', 'guacha', '2198989898', '2025-08-22 21:15:39'),
-(3, 'brenda', 'brenda@gmail.com', '$2y$10$nxVbnidLN8HrMJcywYoDGuiYKkLN/yoOoS1m7XpZDYK7DT1A8NJOK', 'rua a ', 'CENTRO', '21973140724', '2025-09-10 18:22:40');
+(3, 'brenda', 'brenda@gmail.com', '$2y$10$nxVbnidLN8HrMJcywYoDGuiYKkLN/yoOoS1m7XpZDYK7DT1A8NJOK', 'rua a ', 'CENTRO', '21973140724', '2025-09-10 18:22:40'),
+(4, 'nathalia aguiar', 'nathalia@gmail.com', '$2y$10$w89zGNX7xFPgxYTUOCsqKukwoxWXE2PrrSI3p7/YEiN/cCtX8DtAe', 'meridional', 'aliança', '21973140724', '2025-10-15 16:40:41');
 
 --
 -- Índices para tabelas despejadas
@@ -463,7 +505,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de tabela `admins`
 --
 ALTER TABLE `admins`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de tabela `admin_antigo`
@@ -475,43 +517,43 @@ ALTER TABLE `admin_antigo`
 -- AUTO_INCREMENT de tabela `areas_entrega`
 --
 ALTER TABLE `areas_entrega`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT de tabela `categorias`
 --
 ALTER TABLE `categorias`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de tabela `horarios_funcionamento`
 --
 ALTER TABLE `horarios_funcionamento`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- AUTO_INCREMENT de tabela `lojas`
 --
 ALTER TABLE `lojas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de tabela `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT de tabela `pedido_itens`
 --
 ALTER TABLE `pedido_itens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
 -- AUTO_INCREMENT de tabela `produtos`
 --
 ALTER TABLE `produtos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de tabela `produto_opcoes`
@@ -529,7 +571,7 @@ ALTER TABLE `super_admins`
 -- AUTO_INCREMENT de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Restrições para tabelas despejadas
@@ -566,11 +608,7 @@ ALTER TABLE `produtos`
 ALTER TABLE `produto_opcoes`
   ADD CONSTRAINT `produto_opcoes_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
--- Adicionar apenas as colunas que faltam, mantendo email e senha
-ALTER TABLE lojas 
-ADD COLUMN telefone VARCHAR(20) NULL AFTER nome,
-ADD COLUMN endereco TEXT NULL AFTER telefone,
-ADD COLUMN bairro VARCHAR(100) NULL AFTER endereco,
-ADD COLUMN data_analise TIMESTAMP NULL AFTER data_criacao,
-ADD COLUMN observacao_analise TEXT NULL AFTER data_analise;
-ADD COLUMN status_analise ENUM('pendente','aprovada','reprovada') NOT NULL DEFAULT 'pendente' AFTER observacao_analise;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
