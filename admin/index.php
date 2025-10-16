@@ -89,12 +89,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Acesso da Loja</title>
     <link rel="stylesheet" href="./css/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
     
 </head>
 <body class="login-page">
 
     <header class="page-header">
-       <h1>Bem-vindo ao <span>Plata</span>food</h1>
+       <h1>Bem-vindo ao Plata<span>food</span></h1>
         <p>A plataforma completa para gerenciar sua loja e seus pedidos online.</p>
     </header>
 

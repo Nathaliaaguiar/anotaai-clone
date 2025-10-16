@@ -145,3 +145,43 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+// (dentro do seu document.addEventListener('DOMContentLoaded', function() { ... })
+
+// (dentro do seu document.addEventListener('DOMContentLoaded', function() { ... })
+
+// --- LÓGICA DE NOTIFICAÇÃO PERSISTENTE - VERSÃO FINAL ---
+const toast = document.getElementById('toast-notificacao');
+// Verifica se o usuário está logado (procurando por um elemento que só logados veem)
+const estaLogado = document.querySelector('a[href*="perfil.php"]'); 
+
+if (toast && estaLogado) {
+    const btnFecharToast = document.getElementById('toast-fechar');
+
+    // Evento para fechar o toast manualmente (ele pode reaparecer na próxima verificação)
+    btnFecharToast.addEventListener('click', () => {
+        toast.classList.remove('show');
+    });
+
+    // Função que verifica o status no servidor
+    function verificarStatus() {
+        // A URL deve ser o caminho absoluto para o seu arquivo
+        fetch('/anotaai-clone/user/verificar_status.php')
+            .then(response => response.json())
+            .then(data => {
+                // Se o status retornado for 'saiu_para_entrega', mostra o toast.
+                if (data.status === 'saiu_para_entrega') {
+                    toast.classList.add('show');
+                } else {
+                    // Se for qualquer outro status (incluindo 'nenhum'), esconde o toast.
+                    toast.classList.remove('show');
+                }
+            })
+            .catch(error => console.error('Erro ao verificar status do pedido:', error));
+    }
+
+    // Chama a função a cada 15 segundos para uma resposta mais rápida
+    setInterval(verificarStatus, 15000); // 15000ms = 15 segundos
+    
+    // Chama uma vez logo ao carregar a página para verificação imediata
+    verificarStatus(); 
+}

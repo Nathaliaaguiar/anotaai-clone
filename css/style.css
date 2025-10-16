@@ -1720,3 +1720,71 @@ display: flex;
     flex: 1;
   }
 }
+/* ======================================================
+   CSS PARA NOTIFICAÇÃO ESTILO "TOAST"
+   ====================================================== */
+.toast-notificacao {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000; /* Z-index alto para ficar sobre tudo */
+    width: 90%;
+    max-width: 380px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    border-left: 5px solid #28a745; /* Verde sucesso */
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    
+    /* Começa escondido e fora da tela */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(110%);
+    transition: all 0.4s cubic-bezier(0.215, 0.610, 0.355, 1); /* Animação suave */
+}
+
+/* Classe 'show' que será adicionada pelo JavaScript para exibir */
+.toast-notificacao.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+.toast-conteudo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-grow: 1; /* Ocupa o espaço disponível */
+}
+
+.toast-icone {
+    width: 40px;
+    height: 40px;
+}
+
+.toast-texto {
+    display: flex;
+    flex-direction: column;
+}
+
+.toast-texto strong {
+    font-size: 1rem;
+    color: #333;
+}
+
+.toast-texto span {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.toast-fechar {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #aaa;
+    cursor: pointer;
+    padding: 0 0.5rem;
+    align-self: flex-start; /* Alinha o botão de fechar no topo */
+}

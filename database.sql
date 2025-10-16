@@ -41,7 +41,8 @@ CREATE TABLE `admins` (
 
 INSERT INTO `admins` (`id`, `loja_id`, `email`, `senha`) VALUES
 (6, 4, 'aguiar@gmail.com', '$2y$10$aND/SzBo3wd887Nh41Za.ONoX0Agwsk3Jwe9xaIx.ED60WwiFD9xy'),
-(7, 5, 'prensado@gmail.com', '$2y$10$HxBnxBY2lAmeMAEjMnpJ9OHM0mtsEo.Un/e2L8Pqa9cM1oVHAq7u.');
+(7, 5, 'prensado@gmail.com', '$2y$10$HxBnxBY2lAmeMAEjMnpJ9OHM0mtsEo.Un/e2L8Pqa9cM1oVHAq7u.'),
+(17, 15, 'pizzari@gmail.com', '$2y$10$H6AcOu02CWTdGS3VduBf6uImKiD0ydZb3vWVEYJgkOwWjy9/3lq7a');
 
 -- --------------------------------------------------------
 
@@ -82,7 +83,8 @@ CREATE TABLE `areas_entrega` (
 INSERT INTO `areas_entrega` (`id`, `loja_id`, `bairro`, `taxa_entrega`) VALUES
 (6, 4, 'CENTRO', 8.00),
 (7, 5, 'guacha', 0.00),
-(11, 5, 'aliança', 8.00);
+(11, 5, 'aliança', 8.00),
+(18, 15, 'marinha', 0.00);
 
 -- --------------------------------------------------------
 
@@ -102,7 +104,8 @@ CREATE TABLE `categorias` (
 --
 
 INSERT INTO `categorias` (`id`, `loja_id`, `nome`, `ordem`) VALUES
-(6, 5, 'pizza', 0);
+(6, 5, 'pizza', 0),
+(7, 5, 'açai', 0);
 
 -- --------------------------------------------------------
 
@@ -126,7 +129,12 @@ INSERT INTO `configuracoes` (`loja_id`, `chave`, `valor`) VALUES
 (5, 'email_contato', 'prensado@gmail.com'),
 (5, 'endereco', 'rua meridional'),
 (5, 'nome_loja', 'Prensado da Fran'),
-(5, 'telefone', '21973140724');
+(5, 'telefone', '21973140724'),
+(15, 'bairro', 'marinha'),
+(15, 'email_contato', 'pizzari@gmail.com'),
+(15, 'endereco', 'rua aqui'),
+(15, 'nome_loja', 'Pizzaria do Zé'),
+(15, 'telefone', '21987654323');
 
 -- --------------------------------------------------------
 
@@ -148,13 +156,13 @@ CREATE TABLE `horarios_funcionamento` (
 --
 
 INSERT INTO `horarios_funcionamento` (`id`, `loja_id`, `dia_semana`, `ativo`, `horario_abertura`, `horario_fechamento`) VALUES
-(15, 5, 0, 0, '08:00:00', '22:00:00'),
-(16, 5, 1, 0, '08:00:00', '22:00:00'),
-(17, 5, 2, 0, '08:00:00', '22:00:00'),
-(18, 5, 3, 1, '08:00:00', '10:00:00'),
-(19, 5, 4, 0, '08:00:00', '22:00:00'),
-(20, 5, 5, 0, '08:00:00', '22:00:00'),
-(21, 5, 6, 0, '08:00:00', '22:00:00');
+(15, 5, 0, 1, '08:00:00', '22:00:00'),
+(16, 5, 1, 1, '08:00:00', '22:00:00'),
+(17, 5, 2, 1, '08:00:00', '22:00:00'),
+(18, 5, 3, 1, '08:00:00', '22:00:00'),
+(19, 5, 4, 1, '08:00:00', '22:00:00'),
+(20, 5, 5, 1, '08:00:00', '22:00:00'),
+(21, 5, 6, 1, '08:00:00', '22:00:00');
 
 -- --------------------------------------------------------
 
@@ -182,8 +190,9 @@ CREATE TABLE `lojas` (
 --
 
 INSERT INTO `lojas` (`id`, `nome`, `email`, `senha`, `aprovado`, `telefone`, `endereco`, `bairro`, `data_criacao`, `data_analise`, `observacao_analise`, `ativa`) VALUES
-(4, 'minha loja teste', '', '', 0, NULL, NULL, NULL, '2025-09-10 17:41:47', NULL, NULL, 1),
-(5, 'prensado da fran', 'prensado@gmail.com', '$2y$10$HxBnxBY2lAmeMAEjMnpJ9OHM0mtsEo.Un/e2L8Pqa9cM1oVHAq7u.', 1, '21973140724', 'rua meridional', 'guacha', '2025-10-15 17:01:19', '2025-10-15 17:26:08', NULL, 1);
+(4, 'minha loja teste', '', '', 1, NULL, NULL, NULL, '2025-09-10 17:41:47', '2025-10-16 19:44:21', NULL, 1),
+(5, 'prensado da fran', 'prensado@gmail.com', '$2y$10$HxBnxBY2lAmeMAEjMnpJ9OHM0mtsEo.Un/e2L8Pqa9cM1oVHAq7u.', 1, '21973140724', 'rua meridional', 'guacha', '2025-10-15 17:01:19', '2025-10-15 17:26:08', NULL, 1),
+(15, 'Pizzaria do Zé', 'pizzari@gmail.com', '$2y$10$H6AcOu02CWTdGS3VduBf6uImKiD0ydZb3vWVEYJgkOwWjy9/3lq7a', 1, '21987654323', 'rua aqui', 'marinha', '2025-10-16 19:36:26', '2025-10-16 19:44:13', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -242,7 +251,9 @@ INSERT INTO `pedidos` (`id`, `loja_id`, `usuario_id`, `data`, `status`, `total`,
 (32, NULL, 1, '2025-08-27 21:34:09', 'pendente', 15.00, 5.00, 'cartao', NULL),
 (33, 1, 1, '2025-08-27 21:41:28', 'entregue', 31.00, 5.00, 'dinheiro', NULL),
 (34, 1, 1, '2025-09-10 17:05:14', 'entregue', 12.00, 5.00, 'dinheiro', NULL),
-(35, 5, 4, '2025-10-15 17:43:31', 'entregue', 53.00, 8.00, 'dinheiro', 50.00);
+(35, 5, 4, '2025-10-15 17:43:31', 'entregue', 53.00, 8.00, 'dinheiro', 50.00),
+(36, 5, 4, '2025-10-16 19:12:51', 'entregue', 113.00, 8.00, 'cartao', NULL),
+(37, 5, 4, '2025-10-16 19:33:57', 'saiu_para_entrega', 53.00, 8.00, 'dinheiro', 100.00);
 
 -- --------------------------------------------------------
 
@@ -306,7 +317,12 @@ INSERT INTO `pedido_itens` (`id`, `pedido_id`, `produto_id`, `quantidade`, `prec
 (43, 31, 5, 1, 26.00, ''),
 (45, 33, 5, 1, 26.00, ''),
 (46, 34, 6, 1, 7.00, ''),
-(47, 35, 10, 1, 45.00, '');
+(48, 36, 12, 1, 15.00, ''),
+(49, 36, 13, 1, 45.00, ''),
+(50, 36, 12, 1, 15.00, ''),
+(51, 36, 12, 1, 15.00, ''),
+(52, 36, 12, 1, 15.00, ''),
+(53, 37, 13, 1, 45.00, '');
 
 -- --------------------------------------------------------
 
@@ -320,6 +336,7 @@ CREATE TABLE `produtos` (
   `nome` varchar(100) NOT NULL,
   `descricao` text DEFAULT NULL,
   `preco` decimal(10,2) NOT NULL,
+  `foto` varchar(255) DEFAULT NULL,
   `imagem` varchar(255) DEFAULT 'default.jpg',
   `ativo` tinyint(4) DEFAULT 1,
   `categoria_id` int(11) DEFAULT NULL
@@ -329,12 +346,14 @@ CREATE TABLE `produtos` (
 -- Despejando dados para a tabela `produtos`
 --
 
-INSERT INTO `produtos` (`id`, `loja_id`, `nome`, `descricao`, `preco`, `imagem`, `ativo`, `categoria_id`) VALUES
-(5, 1, 'Prensado de Contra-File', 'Pão 20cm, Contrafilé, Milho, Ervilha, Batata-Palha, Cenoura ralada, Purê, Azeitona, Ovo de codorna, Passas, Queijo ralado, Molho(tomate,cebola e pimentão), ketchup, Maionese, Mostarda, Maionese caseira, Mussarela, Catupiry ou Cheddar.', 26.00, '68a62e95a21b3.jpeg', 1, NULL),
-(6, 1, 'Coca-cola', 'lata 500ml', 7.00, '68a8c2113980d.jpg', 1, NULL),
-(8, 1, 'pizza', 'pizza familia', 33.00, '68c1b1dcb7fb4.jpg', 1, NULL),
-(9, 2, 'pizza', 'grande', 33.00, '68c1c0040cbb1.jpg', 1, NULL),
-(10, 5, 'pizza calabreza', 'grande', 45.00, '68efdc8e9c0e6.jpg', 1, 6);
+INSERT INTO `produtos` (`id`, `loja_id`, `nome`, `descricao`, `preco`, `foto`, `imagem`, `ativo`, `categoria_id`) VALUES
+(5, 1, 'Prensado de Contra-File', 'Pão 20cm, Contrafilé, Milho, Ervilha, Batata-Palha, Cenoura ralada, Purê, Azeitona, Ovo de codorna, Passas, Queijo ralado, Molho(tomate,cebola e pimentão), ketchup, Maionese, Mostarda, Maionese caseira, Mussarela, Catupiry ou Cheddar.', 26.00, NULL, '68a62e95a21b3.jpeg', 1, NULL),
+(6, 1, 'Coca-cola', 'lata 500ml', 7.00, NULL, '68a8c2113980d.jpg', 1, NULL),
+(8, 1, 'pizza', 'pizza familia', 33.00, NULL, '68c1b1dcb7fb4.jpg', 1, NULL),
+(9, 2, 'pizza', 'grande', 33.00, NULL, '68c1c0040cbb1.jpg', 1, NULL),
+(12, 5, 'açai', 'asas', 15.00, 'prod_68f1355ad5b61.jpg', '68f12f7e5bde4.jpg', 1, 7),
+(13, 5, 'pizza', 'asasa', 45.00, 'prod_68f135b74947e.jpg', 'default.jpg', 1, 6),
+(15, 5, 'pizza calabacon', 'gdfg', 67.00, 'prod_68f13a969b085.jpeg', 'default.jpg', 1, 6);
 
 -- --------------------------------------------------------
 
@@ -505,7 +524,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de tabela `admins`
 --
 ALTER TABLE `admins`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT de tabela `admin_antigo`
@@ -517,43 +536,43 @@ ALTER TABLE `admin_antigo`
 -- AUTO_INCREMENT de tabela `areas_entrega`
 --
 ALTER TABLE `areas_entrega`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de tabela `categorias`
 --
 ALTER TABLE `categorias`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de tabela `horarios_funcionamento`
 --
 ALTER TABLE `horarios_funcionamento`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT de tabela `lojas`
 --
 ALTER TABLE `lojas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT de tabela `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT de tabela `pedido_itens`
 --
 ALTER TABLE `pedido_itens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT de tabela `produtos`
 --
 ALTER TABLE `produtos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT de tabela `produto_opcoes`

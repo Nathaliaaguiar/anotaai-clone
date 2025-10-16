@@ -82,6 +82,19 @@ function is_active($page_name) {
     <link rel="stylesheet" href="<?php echo $base_url; ?>/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
+<body>
+    <div id="toast-notificacao" class="toast-notificacao">
+        <div class="toast-conteudo">
+            <img src="../img/delivery.gif" alt="Ícone de entrega" class="toast-icone">
+            <div class="toast-texto">
+                <strong>Seu pedido saiu para entrega!</strong>
+                <span>O entregador já está a caminho.</span>
+            </div>
+        </div>
+        <button id="toast-fechar" class="toast-fechar">&times;</button>
+    </div>
+    <header>
+        </header>
 <body class="user-page">
 
     <!-- Carrinho flutuante -->
@@ -106,9 +119,7 @@ function is_active($page_name) {
                     <span><?php echo $status_loja['texto']; ?></span>
                 </div>
             <?php else: ?>
-                <div class="status-loja status-fechado">
-                    <span>FECHADO NO MOMENTO</span>
-                </div>
+                
             <?php endif; ?>
 
             <nav id="nav-menu">
@@ -124,9 +135,14 @@ function is_active($page_name) {
                     <?php endif; ?>
 
                     <?php if (isset($_SESSION['usuario_id'])): ?>
-                        <li><a href="<?php echo $base_url; ?>/user/perfil.php" 
-                               class="nav-button <?php echo is_active('perfil.php'); ?>">Meu Perfil</a></li>
-                        <li><a href="<?php echo $base_url; ?>/user/logout.php">Sair</a></li>
+                      <ul class="menu-links">
+  <li><a href="<?php echo $base_url; ?>/index.php" 
+         class="nav-button <?php echo is_active('index.php'); ?>">🏠 Início</a></li>
+  <li><a href="<?php echo $base_url; ?>/user/perfil.php" 
+         class="nav-button <?php echo is_active('perfil.php'); ?>">Meu Perfil</a></li>
+  <li><a href="<?php echo $base_url; ?>/user/index.php" 
+         class="nav-button sair-btn">Sair</a></li>
+</ul>
                     <?php else: ?>
                         <li><a href="<?php echo $base_url; ?>/user/login.php" 
                                class="nav-button <?php echo is_active('login.php'); ?>">Entrar / Cadastrar</a></li>
