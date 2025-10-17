@@ -7,16 +7,21 @@ if (!isset($_SESSION['usuario_id'])) {
 }
 $usuario_id = $_SESSION['usuario_id'];
 
-// Lógica para atualizar perfil (agora incluindo o bairro)
+// Atualizar perfil (com CEP, número, cidade, bairro e endereço)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = $_POST['nome'];
     $email = $_POST['email'];
     $telefone = $_POST['telefone'];
+    $cep = $_POST['cep'];
     $endereco = $_POST['endereco'];
-    $bairro = trim($_POST['bairro']); // Novo campo
+    $numero = $_POST['numero'];
+    $bairro = trim($_POST['bairro']);
+    $cidade = $_POST['cidade'];
 
-    $stmt = $pdo->prepare("UPDATE usuarios SET nome = ?, email = ?, telefone = ?, endereco = ?, bairro = ? WHERE id = ?");
-    $stmt->execute([$nome, $email, $telefone, $endereco, $bairro, $usuario_id]);
+    $stmt = $pdo->prepare("UPDATE usuarios 
+        SET nome = ?, email = ?, telefone = ?, cep = ?, endereco = ?, numero = ?, bairro = ?, cidade = ? 
+        WHERE id = ?");
+    $stmt->execute([$nome, $email, $telefone, $cep, $endereco, $numero, $bairro, $cidade, $usuario_id]);
     $sucesso_update = "Perfil atualizado com sucesso!";
 }
 
@@ -30,7 +35,7 @@ $stmt_pedidos = $pdo->prepare("SELECT * FROM pedidos WHERE usuario_id = ? ORDER 
 $stmt_pedidos->execute([$usuario_id]);
 $pedidos = $stmt_pedidos->fetchAll();
 
-// Busca TODOS os itens de TODOS os pedidos de uma vez para otimizar a consulta
+// Itens dos pedidos
 $itens_por_pedido = [];
 if ($pedidos) {
     $pedido_ids = array_column($pedidos, 'id');
@@ -43,7 +48,6 @@ if ($pedidos) {
             WHERE pi.pedido_id IN ($ids_string)
         ");
         $todos_itens = $stmt_itens->fetchAll();
-        // Agrupa os itens pelo ID do pedido para fácil acesso na hora de exibir
         foreach ($todos_itens as $item) {
             $itens_por_pedido[$item['pedido_id']][] = $item;
         }
@@ -68,8 +72,14 @@ if ($pedidos) {
                 <div class="form-group"><label>Nome:</label><input type="text" name="nome" value="<?php echo htmlspecialchars($usuario['nome']); ?>"></div>
                 <div class="form-group"><label>Email:</label><input type="email" name="email" value="<?php echo htmlspecialchars($usuario['email']); ?>"></div>
                 <div class="form-group"><label>Telefone:</label><input type="text" name="telefone" value="<?php echo htmlspecialchars($usuario['telefone']); ?>"></div>
-                <div class="form-group"><label>Endereço (Rua, N°):</label><input type="text" name="endereco" value="<?php echo htmlspecialchars($usuario['endereco']); ?>"></div>
-                <div class="form-group"><label>Bairro:</label><input type="text" name="bairro" value="<?php echo htmlspecialchars($usuario['bairro']); ?>"></div>
+
+                <h3>Endereço</h3>
+                <div class="form-group"><label>CEP:</label><input type="text" name="cep" id="cep" value="<?php echo htmlspecialchars($usuario['cep']); ?>"></div>
+                <div class="form-group"><label>Endereço (Rua):</label><input type="text" name="endereco" id="endereco" value="<?php echo htmlspecialchars($usuario['endereco']); ?>"></div>
+                <div class="form-group"><label>Número:</label><input type="text" name="numero" value="<?php echo htmlspecialchars($usuario['numero']); ?>"></div>
+                <div class="form-group"><label>Bairro:</label><input type="text" name="bairro" id="bairro" value="<?php echo htmlspecialchars($usuario['bairro']); ?>"></div>
+                <div class="form-group"><label>Cidade:</label><input type="text" name="cidade" id="cidade" value="<?php echo htmlspecialchars($usuario['cidade']); ?>"></div>
+
                 <button type="submit" class="btn">Atualizar Dados</button>
             </form>
         </div>
@@ -112,5 +122,45 @@ if ($pedidos) {
         </div>
     </div>
 </section>
+
+<script>
+// Função ViaCEP dinâmica
+const cepInput = document.getElementById('cep');
+const enderecoInput = document.getElementById('endereco');
+const bairroInput = document.getElementById('bairro');
+const cidadeInput = document.getElementById('cidade');
+
+function limparEndereco() {
+    enderecoInput.value = '';
+    bairroInput.value = '';
+    cidadeInput.value = '';
+}
+
+async function consultarCep(cep) {
+    try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await response.json();
+        if (!data.erro) {
+            enderecoInput.value = data.logradouro;
+            bairroInput.value = data.bairro;
+            cidadeInput.value = data.localidade;
+        } else {
+            limparEndereco();
+        }
+    } catch (error) {
+        limparEndereco();
+        console.error('Erro ao consultar CEP:', error);
+    }
+}
+
+cepInput.addEventListener('input', () => {
+    const cep = cepInput.value.replace(/\D/g, '');
+    if (cep.length !== 8) {
+        limparEndereco();
+        return;
+    }
+    consultarCep(cep);
+});
+</script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

@@ -29,12 +29,23 @@ function verificarLojaAberta($pdo, $loja_id) {
 
 // Busca todas as lojas ativas e aprovadas
 try {
-    $stmt_lojas = $pdo->prepare("SELECT id, nome, endereco, bairro FROM lojas WHERE aprovado = 1 AND ativa = 1 ORDER BY nome ASC");
+    $stmt_lojas = $pdo->prepare("
+        SELECT l.id,
+               COALESCE(c.valor, l.nome) AS nome, -- pega o nome atualizado ou o original
+               l.endereco,
+               l.bairro
+        FROM lojas l
+        LEFT JOIN configuracoes c 
+               ON l.id = c.loja_id AND c.chave = 'nome_loja'
+        WHERE l.aprovado = 1 AND l.ativa = 1
+        ORDER BY nome ASC
+    ");
     $stmt_lojas->execute();
     $lojas = $stmt_lojas->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     die("Erro ao buscar lojas: " . $e->getMessage());
 }
+
 ?>
 <style>
     .lojas-container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }

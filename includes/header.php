@@ -140,7 +140,7 @@ function is_active($page_name) {
          class="nav-button <?php echo is_active('index.php'); ?>">🏠 Início</a></li>
   <li><a href="<?php echo $base_url; ?>/user/perfil.php" 
          class="nav-button <?php echo is_active('perfil.php'); ?>">Meu Perfil</a></li>
-  <li><a href="<?php echo $base_url; ?>/user/index.php" 
+  <li><a href="<?php echo $base_url; ?>/user/logout.php" 
          class="nav-button sair-btn">Sair</a></li>
 </ul>
                     <?php else: ?>
