@@ -30,23 +30,6 @@ function verificarLojaAberta($pdo, $loja_id) {
     return false;
 }
 
-// Verifica se o usuário está logado
-if (!isset($_SESSION['usuario_id'])) {
-    die("Erro: usuário não logado. Faça login para continuar.");
-}
-
-// Pega lat/lng do usuário
-$stmt = $pdo->prepare("SELECT lat, lng FROM usuarios WHERE id = ?");
-$stmt->execute([$_SESSION['usuario_id']]);
-$usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$usuario || !$usuario['lat'] || !$usuario['lng']) {
-    die("Erro: localização do usuário não encontrada. Atualize seu endereço.");
-}
-
-$userLat = $usuario['lat'];
-$userLng = $usuario['lng'];
-
 // Busca lojas aprovadas e ativas
 try {
     $stmt_lojas = $pdo->prepare("
@@ -65,36 +48,59 @@ try {
     $todasLojas = $stmt_lojas->fetchAll(PDO::FETCH_ASSOC);
 
     $lojas = [];
-    $raioMaximo = 5; // km
 
-    foreach ($todasLojas as $loja) {
-        if ($loja['lat'] && $loja['lng']) {
-            $distancia = haversine($userLat, $userLng, $loja['lat'], $loja['lng']);
-            if ($distancia <= $raioMaximo) {
-                $loja['distancia'] = $distancia;
-                $lojas[] = $loja;
+    // Se o usuário estiver logado, filtrar por proximidade
+    if (isset($_SESSION['usuario_id'])) {
+        $stmt = $pdo->prepare("SELECT lat, lng FROM usuarios WHERE id = ?");
+        $stmt->execute([$_SESSION['usuario_id']]);
+        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($usuario && $usuario['lat'] && $usuario['lng']) {
+            $userLat = $usuario['lat'];
+            $userLng = $usuario['lng'];
+            $raioMaximo = 5; // km
+
+            foreach ($todasLojas as $loja) {
+                if ($loja['lat'] && $loja['lng']) {
+                    $distancia = haversine($userLat, $userLng, $loja['lat'], $loja['lng']);
+                    if ($distancia <= $raioMaximo) {
+                        $loja['distancia'] = $distancia;
+                        $lojas[] = $loja;
+                    }
+                }
             }
+        } else {
+            // Usuário logado mas sem localização -> mostrar todas as lojas
+            $lojas = $todasLojas;
         }
+    } else {
+        // Usuário não logado -> mostrar todas as lojas
+        $lojas = $todasLojas;
     }
 } catch (PDOException $e) {
     die("Erro ao buscar lojas: " . $e->getMessage());
 }
 ?>
 
-<style>
-.lojas-container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
-.lojas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
-.loja-card { border: 1px solid #eee; border-radius: 12px; overflow: hidden; text-decoration: none; color: #333; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: all 0.2s ease; display: flex; flex-direction: column; }
-.loja-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
-.loja-logo-wrapper { width: 100%; height: 150px; background-color: #f7f7f7; display: flex; align-items: center; justify-content: center; }
-.loja-logo { max-width: 90%; max-height: 90%; object-fit: contain; }
-.loja-info { padding: 1rem; position: relative; flex-grow: 1; display: flex; flex-direction: column; }
-.loja-info h3 { margin: 0 0 0.5rem 0; font-size: 1.2rem; }
-.loja-info p { margin: 0; color: #777; font-size: 0.9rem; }
-.status-loja { position: absolute; top: 1rem; right: 1rem; padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
-.status-aberta { background-color: #d4edda; color: #155724; }
-.status-fechada { background-color: #f8d7da; color: #721c24; }
-</style>
+<head>
+    <title>Lojas Disponíveis - PlataFood</title>
+    <link rel="stylesheet" href="./css/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .lojas-container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .lojas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+        .loja-card { border: 1px solid #eee; border-radius: 12px; overflow: hidden; text-decoration: none; color: #333; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: all 0.2s ease; display: flex; flex-direction: column; }
+        .loja-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+        .loja-logo-wrapper { width: 100%; height: 150px; background-color: #f7f7f7; display: flex; align-items: center; justify-content: center; }
+        .loja-logo { max-width: 90%; max-height: 90%; object-fit: contain; }
+        .loja-info { padding: 1rem; position: relative; flex-grow: 1; display: flex; flex-direction: column; }
+        .loja-info h3 { margin: 0 0 0.5rem 0; font-size: 1.2rem; }
+        .loja-info p { margin: 0; color: #777; font-size: 0.9rem; }
+        .status-loja { position: absolute; top: 1rem; right: 1rem; padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
+        .status-aberta { background-color: #d4edda; color: #155724; }
+        .status-fechada { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
 
 <main class="lojas-container">
     <h1>Lojas Disponíveis</h1>
@@ -109,6 +115,7 @@ try {
                     $estaAberta = verificarLojaAberta($pdo, $loja['id']);
                     $statusClasse = $estaAberta ? 'status-aberta' : 'status-fechada';
                     $statusTexto = $estaAberta ? 'Aberta' : 'Fechada';
+                    $distanciaTexto = isset($loja['distancia']) ? number_format($loja['distancia'], 2).' km' : '';
                 ?>
                 <a href="loja_menu.php?loja_id=<?= $loja['id'] ?>" class="loja-card">
                     <div class="loja-logo-wrapper">
@@ -120,7 +127,7 @@ try {
                     <div class="loja-info">
                         <span class="status-loja <?= $statusClasse ?>"><?= $statusTexto ?></span>
                         <h3><?= htmlspecialchars($loja['nome']) ?></h3>
-                        <p><?= htmlspecialchars($loja['bairro']) ?> - <?= number_format($loja['distancia'], 2) ?> km</p>
+                        <p><?= htmlspecialchars($loja['bairro']) ?> <?= $distanciaTexto ? '- '.$distanciaTexto : '' ?></p>
                     </div>
                 </a>
             <?php endforeach; ?>
