@@ -29,6 +29,36 @@ function validarCEP($cep) {
         return false;
     }
 }
+// Função para obter latitude e longitude a partir do endereço completo
+function pegarLatLng($endereco) {
+    $url = 'https://nominatim.openstreetmap.org/search?' . http_build_query([
+        'q' => $endereco,
+        'format' => 'json',
+        'limit' => 1
+    ]);
+
+    $opts = [
+        "http" => [
+            "header" => "User-Agent: MeuProjeto/1.0\r\n"
+        ]
+    ];
+
+    $context = stream_context_create($opts);
+    $resultado = @file_get_contents($url, false, $context);
+    if (!$resultado) return ['lat' => null, 'lng' => null];
+
+    $data = json_decode($resultado, true);
+    if (!empty($data)) {
+        return [
+            'lat' => $data[0]['lat'],
+            'lng' => $data[0]['lon']
+        ];
+    }
+
+    return ['lat' => null, 'lng' => null];
+}
+
+
 
 // Lógica de Cadastro
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
@@ -52,7 +82,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
         error_log("Erro cadastro: CEP inválido - " . $cep);
     }
     // Monta o endereço completo
-    $endereco_completo = "$logradouro, Nº $numero - $bairro, $cidade - CEP: $cep";
+ // Monta o endereço completo
+$endereco_completo_para_geocoding = "$logradouro, $bairro, $cidade";
+$coordenadas = pegarLatLng($endereco_completo_para_geocoding);
+$lat = $coordenadas['lat'];
+$lng = $coordenadas['lng'];
+
+// Mantém o endereço completo no banco
+$endereco_completo = "$logradouro, Nº $numero - $bairro, $cidade - CEP: $cep";
+
+
+if (!$lat || !$lng) {
+    $erro_cadastro = "Não foi possível localizar o endereço. Verifique os dados do CEP e endereço.";
+    error_log("Erro cadastro: lat/lng não encontrados para o endereço: $endereco_completo");
+}
+
 
     if ($senha !== $confirmar_senha) {
         $erro_cadastro = "As senhas não coincidem.";
@@ -69,20 +113,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
 
                 // Inserção direta na tabela de usuarios - sem aprovação necessária
                 $stmt_usuario = $pdo->prepare("
-                    INSERT INTO usuarios (nome, email, senha, endereco, bairro, telefone, cep, cidade, numero, criado_em) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                   INSERT INTO usuarios (nome, email, senha, endereco, bairro, telefone, cep, cidade, numero, lat, lng, criado_em) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+
                 ");
                 $resultado = $stmt_usuario->execute([
-                    $nome, 
-                    $email, 
-                    $senha_hash, 
-                    $endereco_completo, 
-                    $bairro, 
-                    $telefone, 
-                    $cep, 
-                    $cidade, 
-                    $numero
-                ]);
+    $nome, 
+    $email, 
+    $senha_hash, 
+    $endereco_completo, 
+    $bairro, 
+    $telefone, 
+    $cep, 
+    $cidade, 
+    $numero,
+    $lat,
+    $lng
+]
+);
 
                 if ($resultado) {
                     $sucesso_cadastro = "✅ Cadastro realizado com sucesso! Você já pode fazer login.";

@@ -26,6 +26,29 @@ function validarCEP($cep) {
         return false;
     }
 }
+function pegarLatLng($endereco) {
+    $url = 'https://nominatim.openstreetmap.org/search?' . http_build_query([
+        'q' => $endereco,
+        'format' => 'json',
+        'limit' => 1
+    ]);
+
+    $opts = [
+        "http" => [
+            "header" => "User-Agent: Platafood/1.0\r\n"
+        ]
+    ];
+
+    $context = stream_context_create($opts);
+    $resultado = file_get_contents($url, false, $context);
+    $data = json_decode($resultado, true);
+
+    if (!empty($data)) {
+        return ['lat' => $data[0]['lat'], 'lng' => $data[0]['lon']];
+    }
+
+    return ['lat' => null, 'lng' => null];
+}
 
 /* ========================
    LOGIN DA LOJA
@@ -86,6 +109,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
     if (!validarCEP($cep)) {
         $erro_cadastro = "CEP inválido ou inexistente. Verifique e tente novamente.";
     }
+    $endereco_completo = "$rua, $numero - $bairro, $cidade, $cep";
+$coordenadas = pegarLatLng($endereco_completo);
+$lat = $coordenadas['lat'];
+$lng = $coordenadas['lng'];
+
+if (!$lat || !$lng) {
+    $erro_cadastro = "Não foi possível localizar a localização da loja. Verifique os dados do endereço e CEP.";
+}
+
 
     // Validação de senha
     if ($senha !== $confirmar_senha) {
@@ -100,12 +132,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
             $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
 
             // Inserção na tabela lojas
-            $stmt = $pdo->prepare("INSERT INTO lojas 
-                (nome, email, senha, telefone, cep, endereco, numero, bairro, cidade, aprovado, ativa, data_criacao)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, NOW())");
-            $stmt->execute([
-                $nome, $email, $senha_hash, $telefone, $cep, $rua, $numero, $bairro, $cidade
-            ]);
+           $stmt = $pdo->prepare("INSERT INTO lojas 
+    (nome, email, senha, telefone, cep, endereco, numero, bairro, cidade, lat, lng, aprovado, ativa, data_criacao)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, NOW())");
+$stmt->execute([
+    $nome, $email, $senha_hash, $telefone, $cep, $rua, $numero, $bairro, $cidade, $lat, $lng
+]);
+
 
             $loja_id = $pdo->lastInsertId();
 
