@@ -136,15 +136,13 @@ button:disabled {
 
 /* Estado habilitado */
 button.btn:not(:disabled) {
-    background-color: #007bff;
+    
     color: white;
     cursor: pointer;
     transition: background 0.3s ease;
 }
 
-button.btn:not(:disabled):hover {
-    background-color: #0056b3;
-}
+
 
     </style>
 </head>
@@ -175,7 +173,8 @@ button.btn:not(:disabled):hover {
     <?php if ($sucesso_cadastro): ?><p class="success"><?= htmlspecialchars($sucesso_cadastro) ?></p><?php endif; ?>
 
     <form method="POST" id="cadastroLojaForm" 
-          <!-- autocomplete="off"  ⬅️ Descomente esta linha no dia da apresentação -->
+           <!-- autocomplete="off"  -->
+          >
     
         <div class="form-group">
             <label>Nome da Loja *</label>

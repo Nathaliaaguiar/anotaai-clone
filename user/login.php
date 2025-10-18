@@ -193,6 +193,29 @@ if (isset($_SESSION['usuario_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+        /* Estado desabilitado do botão */
+button[disabled],
+button:disabled {
+    background-color: #ccc !important;
+    color: #666 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    opacity: 0.8;
+}
+
+/* Estado habilitado */
+button.btn:not(:disabled) {
+    
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+
+
+    </style>
+  
 </head>
 <body>
     <div class="auth-container">
@@ -237,7 +260,10 @@ if (isset($_SESSION['usuario_id'])) {
                 <div class="success"><?php echo $sucesso_cadastro; ?></div>
             <?php endif; ?>
             
-            <form method="POST" id="cadastroForm">
+            <form method="POST" id="cadastroForm" 
+         autocomplete="off" >
+            
+            
                 <div class="form-group">
                     <label class="required-field">Nome Completo</label>
                     <input type="text" name="nome" required value="<?php echo isset($_POST['nome']) ? htmlspecialchars($_POST['nome']) : ''; ?>">
@@ -288,161 +314,119 @@ if (isset($_SESSION['usuario_id'])) {
         </div>
     </div>
 
-    <script>
-    // === Elementos do DOM ===
-    const cepInput = document.getElementById('cep');
-    const ruaInput = document.getElementById('rua');
-    const bairroInput = document.getElementById('bairro');
-    const cidadeInput = document.getElementById('cidade');
-    const numeroInput = document.getElementById('numero');
-    const nomeInput = document.querySelector('input[name="nome"]');
-    const emailInput = document.querySelector('input[name="email"]');
-    const senhaInput = document.getElementById('senha');
-    const confirmarSenhaInput = document.getElementById('confirmar_senha');
-    const telefoneInput = document.querySelector('input[name="telefone"]');
-    const cepStatus = document.getElementById('cep-status');
-    const btnCadastrar = document.getElementById('btn-cadastrar');
-    const cadastroForm = document.getElementById('cadastroForm');
+ <script>
+// === Elementos do DOM ===
+const cepInput = document.getElementById('cep');
+const ruaInput = document.getElementById('rua');
+const bairroInput = document.getElementById('bairro');
+const cidadeInput = document.getElementById('cidade');
+const numeroInput = document.getElementById('numero');
+const nomeInput = document.querySelector('input[name="nome"]');
+const emailInput = document.querySelector('input[name="email"]');
+const senhaInput = document.getElementById('senha');
+const confirmarSenhaInput = document.getElementById('confirmar_senha');
+const telefoneInput = document.querySelector('input[name="telefone"]');
+const cepStatus = document.getElementById('cep-status');
+const btnCadastrar = document.getElementById('btn-cadastrar');
+const cadastroForm = document.getElementById('cadastroForm');
 
-    let cepValido = false;
-    let todosCamposPreenchidos = false;
+let cepValido = false;
+let todosCamposPreenchidos = false;
 
-    function mostrarStatusCep(mensagem, tipo) {
-        cepStatus.innerHTML = mensagem;
-        cepStatus.className = 'cep-status ' + tipo;
-    }
+function mostrarStatusCep(mensagem, tipo) {
+    cepStatus.innerHTML = mensagem;
+    cepStatus.className = 'cep-status ' + tipo;
+}
 
-    function limparEndereco() {
-        ruaInput.value = '';
-        bairroInput.value = '';
-        cidadeInput.value = '';
-        cepValido = false;
-        mostrarStatusCep('', '');
-        verificarCampos();
-    }
+function limparEndereco() {
+    ruaInput.value = '';
+    bairroInput.value = '';
+    cidadeInput.value = '';
+    cepValido = false;
+    mostrarStatusCep('', '');
+    verificarCampos();
+}
 
-    function verificarCampos() {
-        // Verificar se todos os campos obrigatórios estão preenchidos
-        const camposObrigatorios = [
-            nomeInput.value.trim(),
-            emailInput.value.trim(),
-            senhaInput.value.trim(),
-            confirmarSenhaInput.value.trim(),
-            telefoneInput.value.trim(),
-            cepInput.value.trim(),
-            ruaInput.value.trim(),
-            bairroInput.value.trim(),
-            cidadeInput.value.trim(),
-            numeroInput.value.trim()
-        ];
-
-        // Verificar se nenhum campo está vazio
-        todosCamposPreenchidos = camposObrigatorios.every(campo => campo !== '');
-        
-        // Verificar se as senhas coincidem (só se ambas estiverem preenchidas)
-        const senhasCoincidem = senhaInput.value === confirmarSenhaInput.value;
-        const senhasValidas = senhaInput.value.length >= 6 && confirmarSenhaInput.value.length >= 6;
-
-        // Habilitar botão apenas se:
-        // 1. Todos campos obrigatórios preenchidos
-        // 2. CEP é válido
-        // 3. Senhas coincidem
-        // 4. Senhas têm pelo menos 6 caracteres
-        btnCadastrar.disabled = !(todosCamposPreenchidos && cepValido && senhasCoincidem && senhasValidas);
-
-        // Debug no console (pode remover depois)
-        console.log('Campos preenchidos:', todosCamposPreenchidos);
-        console.log('CEP válido:', cepValido);
-        console.log('Senhas coincidem:', senhasCoincidem);
-        console.log('Senhas válidas:', senhasValidas);
-        console.log('Botão habilitado:', !btnCadastrar.disabled);
-    }
-
-    async function consultarCep(cep) {
-        if (cep.length !== 8) {
-            limparEndereco();
-            return;
-        }
-
-        mostrarStatusCep('Consultando CEP...', 'cep-loading');
-        cepValido = false;
-        verificarCampos();
-
-        try {
-            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-            const data = await response.json();
-            
-            if (!data.erro && data.cep) {
-                ruaInput.value = data.logradouro || '';
-                bairroInput.value = data.bairro || '';
-                cidadeInput.value = data.localidade || '';
-                cepValido = true;
-                mostrarStatusCep('✅ CEP válido', 'cep-valid');
-            } else {
-                limparEndereco();
-                mostrarStatusCep('❌ CEP não encontrado', 'cep-invalid');
-            }
-        } catch (error) {
-            limparEndereco();
-            mostrarStatusCep('❌ Erro ao consultar CEP', 'cep-invalid');
-            console.error('Erro ao consultar CEP:', error);
-        } finally {
-            verificarCampos();
-        }
-    }
-
-    // Event listeners para todos os campos obrigatórios
-    const camposParaValidar = [
-        nomeInput, emailInput, senhaInput, confirmarSenhaInput, 
-        telefoneInput, cepInput, numeroInput
+function verificarCampos() {
+    const camposObrigatorios = [
+        nomeInput.value.trim(),
+        emailInput.value.trim(),
+        senhaInput.value.trim(),
+        confirmarSenhaInput.value.trim(),
+        telefoneInput.value.trim(),
+        cepInput.value.trim(),
+        ruaInput.value.trim(),
+        bairroInput.value.trim(),
+        cidadeInput.value.trim(),
+        numeroInput.value.trim()
     ];
 
-    camposParaValidar.forEach(campo => {
-        campo.addEventListener('input', verificarCampos);
-    });
+    const todosPreenchidos = camposObrigatorios.every(campo => campo !== '');
+    const senhasCoincidem = senhaInput.value === confirmarSenhaInput.value;
+    const senhasValidas = senhaInput.value.length >= 6 && confirmarSenhaInput.value.length >= 6;
 
-    // Event listener específico para CEP
-    cepInput.addEventListener('input', () => {
-        const cep = cepInput.value.replace(/\D/g, '');
-        cepInput.value = cep.replace(/(\d{5})(\d{3})/, '$1-$2');
+    const habilitar = todosPreenchidos && cepValido && senhasCoincidem && senhasValidas;
+    btnCadastrar.disabled = !habilitar;
+}
+
+async function consultarCep(cep) {
+    if (cep.length !== 8) {
+        limparEndereco();
+        return;
+    }
+
+    mostrarStatusCep('Consultando CEP...', 'cep-loading');
+    cepValido = false;
+    verificarCampos();
+
+    try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await response.json();
         
-        if (cep.length === 8) {
-            consultarCep(cep);
+        if (!data.erro && data.cep) {
+            ruaInput.value = data.logradouro || '';
+            bairroInput.value = data.bairro || '';
+            cidadeInput.value = data.localidade || '';
+            cepValido = true;
+            mostrarStatusCep('✅ CEP válido', 'cep-valid');
         } else {
             limparEndereco();
+            mostrarStatusCep('❌ CEP não encontrado', 'cep-invalid');
         }
-    });
+    } catch (error) {
+        limparEndereco();
+        mostrarStatusCep('❌ Erro ao consultar CEP', 'cep-invalid');
+        console.error('Erro ao consultar CEP:', error);
+    } finally {
+        verificarCampos();
+    }
+}
 
-    // Validação do formulário de cadastro
-    cadastroForm.addEventListener('submit', (e) => {
-        const senha = senhaInput.value;
-        const confirmar = confirmarSenhaInput.value;
+// 🔹 Impede clique se o botão ainda estiver desativado
+btnCadastrar.addEventListener('click', (e) => {
+    if (btnCadastrar.disabled) {
+        e.preventDefault();
+        alert("⚠️ Preencha todos os campos corretamente antes de cadastrar.");
+    }
+});
 
-        // Verificar se CEP é válido
-        if (!cepValido) {
-            e.preventDefault();
-            alert('Por favor, informe um CEP válido antes de cadastrar.');
-            return;
-        }
+// Event listeners
+cepInput.addEventListener('input', () => {
+    const cep = cepInput.value.replace(/\D/g, '');
+    cepInput.value = cep.replace(/(\d{5})(\d{3})/, '$1-$2');
+    if (cep.length === 8) {
+        consultarCep(cep);
+    } else {
+        limparEndereco();
+    }
+});
 
-        // Verificar se todos os campos estão preenchidos
-        if (!todosCamposPreenchidos) {
-            e.preventDefault();
-            alert('Por favor, preencha todos os campos obrigatórios.');
-            return;
-        }
+document.querySelectorAll('#cadastroForm input').forEach(input => {
+    input.addEventListener('input', verificarCampos);
+});
 
-        if (senha !== confirmar) {
-            e.preventDefault();
-            alert('As senhas não coincidem!');
-        } else if (senha.length < 6) {
-            e.preventDefault();
-            alert('A senha deve ter pelo menos 6 caracteres.');
-        }
-    });
+// Inicializar estado do botão
+verificarCampos();
+</script>
 
-    // Inicializar estado do botão
-    verificarCampos();
-    </script>
-</body>
-</html>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
