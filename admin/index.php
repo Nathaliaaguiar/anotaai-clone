@@ -40,19 +40,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 
     if ($loja) {
         if (password_verify($senha, $loja['senha'])) {
-            if ($loja['aprovado'] == 1) {
+            if ($loja['ativa'] == 0 && $loja['aprovado'] == 1) {
+                $erro_login = "❌ Sua conta está desativada por descumprimento de regras. Ela voltará em breve. Caso você não siga as regras, sua conta poderá ser banida.";
+            } elseif ($loja['aprovado'] == 0) {
+                $erro_login = "A sua loja ainda está em análise pelo administrador.";
+            } else {
                 $_SESSION['admin_loja_id'] = $loja['id'];
                 $_SESSION['loja_nome'] = $loja['nome'];
                 header("Location: dashboard.php");
                 exit;
-            } else {
-                $erro_login = "A sua loja ainda está em análise pelo administrador.";
             }
         } else {
             $erro_login = "E-mail ou senha incorretos.";
         }
     } else {
-        $erro_login = "E-mail ou senha incorretos.";
+        // Verifica se a loja foi excluída
+        $stmtExcluida = $pdo->prepare("SELECT * FROM lojas_excluidas WHERE email = ?");
+        $stmtExcluida->execute([$email]);
+        $excluida = $stmtExcluida->fetch(PDO::FETCH_ASSOC);
+
+        if ($excluida) {
+            $erro_login = "🚫 Sua conta foi excluída por descumprimento das diretrizes.";
+        } else {
+            $erro_login = "E-mail ou senha incorretos.";
+        }
     }
 }
 
@@ -72,8 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
     $numero = trim($_POST['numero']);
 
     // Validação do CEP
-    $cep_valido = validarCEP($cep);
-    if (!$cep_valido) {
+    if (!validarCEP($cep)) {
         $erro_cadastro = "CEP inválido ou inexistente. Verifique e tente novamente.";
     }
 
@@ -93,14 +103,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
             $stmt = $pdo->prepare("INSERT INTO lojas 
                 (nome, email, senha, telefone, cep, endereco, numero, bairro, cidade, aprovado, ativa, data_criacao)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, NOW())");
-
             $stmt->execute([
                 $nome, $email, $senha_hash, $telefone, $cep, $rua, $numero, $bairro, $cidade
             ]);
 
             $loja_id = $pdo->lastInsertId();
 
-            // Inserir também um registro na tabela admins (responsável pela loja)
+            // Inserir registro na tabela admins
             $stmt_admin = $pdo->prepare("INSERT INTO admins (loja_id, email, senha) VALUES (?, ?, ?)");
             $stmt_admin->execute([$loja_id, $email, $senha_hash]);
 
@@ -115,36 +124,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acesso da Loja - Platafood</title>
-    <link rel="stylesheet" href="./css/index.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* Estado desabilitado do botão */
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acesso da Loja - Platafood</title>
+<link rel="stylesheet" href="./css/index.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
 button[disabled],
-button:disabled {
-    background-color: #ccc !important;
-    color: #666 !important;
-    cursor: not-allowed !important;
-    box-shadow: none !important;
-    opacity: 0.8;
-}
-
-/* Estado habilitado */
-button.btn:not(:disabled) {
-    
-    color: white;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
-
-
-
-    </style>
+button:disabled { background-color: #ccc !important; color: #666 !important; cursor: not-allowed !important; opacity: 0.8; }
+button.btn:not(:disabled) { color: white; cursor: pointer; transition: background 0.3s ease; }
+</style>
 </head>
 <body class="login-page">
 
@@ -166,70 +159,25 @@ button.btn:not(:disabled) {
     </div>
 
     <!-- CADASTRO -->
- <!-- CADASTRO -->
-<div class="form-wrapper">
-    <h2>Cadastrar Nova Loja</h2>
-    <?php if ($erro_cadastro): ?><p class="error"><?= htmlspecialchars($erro_cadastro) ?></p><?php endif; ?>
-    <?php if ($sucesso_cadastro): ?><p class="success"><?= htmlspecialchars($sucesso_cadastro) ?></p><?php endif; ?>
+    <div class="form-wrapper">
+        <h2>Cadastrar Nova Loja</h2>
+        <?php if ($erro_cadastro): ?><p class="error"><?= htmlspecialchars($erro_cadastro) ?></p><?php endif; ?>
+        <?php if ($sucesso_cadastro): ?><p class="success"><?= htmlspecialchars($sucesso_cadastro) ?></p><?php endif; ?>
 
-    <form method="POST" id="cadastroLojaForm" 
-           <!-- autocomplete="off"  -->
-          >
-    
-        <div class="form-group">
-            <label>Nome da Loja *</label>
-            <input type="text" name="nome_loja" required>
-        </div>
-
-        <div class="form-group">
-            <label>E-mail de Acesso *</label>
-            <input type="email" name="email_admin" required>
-        </div>
-
-        <div class="form-group">
-            <label>Senha *</label>
-            <input type="password" id="senha_cadastro" name="senha_cadastro" required minlength="6">
-        </div>
-
-        <div class="form-group">
-            <label>Confirmar Senha *</label>
-            <input type="password" id="confirmar_senha" name="confirmar_senha" required>
-        </div>
-
-        <div class="form-group">
-            <label>Telefone / WhatsApp *</label>
-            <input type="tel" name="telefone" required>
-        </div>
-
-        <div class="form-group">
-            <label>CEP *</label>
-            <input type="text" id="cep_loja" name="cep_loja" maxlength="9" required>
-        </div>
-
-        <div class="form-group">
-            <label>Rua *</label>
-            <input type="text" id="rua_loja" name="rua_loja" readonly required>
-        </div>
-
-        <div class="form-group">
-            <label>Bairro *</label>
-            <input type="text" id="bairro_loja" name="bairro_loja" readonly required>
-        </div>
-
-        <div class="form-group">
-            <label>Cidade *</label>
-            <input type="text" id="cidade_loja" name="cidade_loja" readonly required>
-        </div>
-
-        <div class="form-group">
-            <label>Nº da casa *</label>
-            <input type="text" id="numero" name="numero" required>
-        </div>
-
-        <button type="submit" name="cadastro" class="btn" id="btn-cadastrar" disabled>Cadastrar Loja</button>
-    </form>
-</div>
-
+        <form method="POST" id="cadastroLojaForm">
+            <div class="form-group"><label>Nome da Loja *</label><input type="text" name="nome_loja" required></div>
+            <div class="form-group"><label>E-mail de Acesso *</label><input type="email" name="email_admin" required></div>
+            <div class="form-group"><label>Senha *</label><input type="password" id="senha_cadastro" name="senha_cadastro" required minlength="6"></div>
+            <div class="form-group"><label>Confirmar Senha *</label><input type="password" id="confirmar_senha" name="confirmar_senha" required></div>
+            <div class="form-group"><label>Telefone / WhatsApp *</label><input type="tel" name="telefone" required></div>
+            <div class="form-group"><label>CEP *</label><input type="text" id="cep_loja" name="cep_loja" maxlength="9" required></div>
+            <div class="form-group"><label>Rua *</label><input type="text" id="rua_loja" name="rua_loja" readonly required></div>
+            <div class="form-group"><label>Bairro *</label><input type="text" id="bairro_loja" name="bairro_loja" readonly required></div>
+            <div class="form-group"><label>Cidade *</label><input type="text" id="cidade_loja" name="cidade_loja" readonly required></div>
+            <div class="form-group"><label>Nº da casa *</label><input type="text" id="numero" name="numero" required></div>
+            <button type="submit" name="cadastro" class="btn" id="btn-cadastrar" disabled>Cadastrar Loja</button>
+        </form>
+    </div>
 </div>
 
 <footer class="page-footer">
@@ -242,66 +190,43 @@ const ruaInput = document.getElementById('rua_loja');
 const bairroInput = document.getElementById('bairro_loja');
 const cidadeInput = document.getElementById('cidade_loja');
 const btnCadastrar = document.getElementById('btn-cadastrar');
-const form = document.getElementById('cadastroLojaForm');
 
 let cepValido = false;
 
 async function consultarCep(cep) {
     cep = cep.replace(/\D/g, '');
-    if (cep.length !== 8) {
-        ruaInput.value = '';
-        bairroInput.value = '';
-        cidadeInput.value = '';
-        cepValido = false;
-        verificarCampos();
-        return;
-    }
-
+    if (cep.length !== 8) { ruaInput.value=''; bairroInput.value=''; cidadeInput.value=''; cepValido=false; verificarCampos(); return; }
     try {
         const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await res.json();
-        if (!data.erro) {
-            ruaInput.value = data.logradouro || '';
-            bairroInput.value = data.bairro || '';
-            cidadeInput.value = data.localidade || '';
-            cepValido = true;
-        } else {
-            cepValido = false;
-        }
-    } catch {
-        cepValido = false;
-    }
+        if(!data.erro){ ruaInput.value=data.logradouro||''; bairroInput.value=data.bairro||''; cidadeInput.value=data.localidade||''; cepValido=true; }
+        else{cepValido=false;}
+    } catch { cepValido=false; }
     verificarCampos();
 }
 
 function verificarCampos() {
     const campos = document.querySelectorAll('#cadastroLojaForm input[required]');
-    const todosPreenchidos = Array.from(campos).every(campo => campo.value.trim() !== '');
+    const todosPreenchidos = Array.from(campos).every(campo=>campo.value.trim()!=='');
     const senha = document.getElementById('senha_cadastro').value;
     const confirmar = document.getElementById('confirmar_senha').value;
-    const senhasOK = senha.length >= 6 && senha === confirmar;
-
-    const habilitar = todosPreenchidos && cepValido && senhasOK;
-    btnCadastrar.disabled = !habilitar;
+    const senhasOK = senha.length>=6 && senha===confirmar;
+    btnCadastrar.disabled = !(todosPreenchidos && cepValido && senhasOK);
 }
 
-// 🔹 Mostra aviso se clicar antes de preencher tudo
-btnCadastrar.addEventListener('click', (e) => {
-    if (btnCadastrar.disabled) {
-        e.preventDefault();
-        alert("⚠️ Preencha todos os campos corretamente antes de cadastrar.");
-    }
+btnCadastrar.addEventListener('click', e => {
+    if(btnCadastrar.disabled){ e.preventDefault(); alert("⚠️ Preencha todos os campos corretamente antes de cadastrar."); }
 });
 
-cepInput.addEventListener('input', e => {
-    const cep = e.target.value.replace(/\D/g, '');
-    e.target.value = cep.replace(/(\d{5})(\d{3})/, '$1-$2');
-    if (cep.length === 8) consultarCep(cep);
+cepInput.addEventListener('input', e=>{
+    const cep = e.target.value.replace(/\D/g,'');
+    e.target.value = cep.replace(/(\d{5})(\d{3})/,'$1-$2');
+    if(cep.length===8) consultarCep(cep);
     else verificarCampos();
 });
 
-document.querySelectorAll('#cadastroLojaForm input').forEach(input => {
-    input.addEventListener('input', verificarCampos);
+document.querySelectorAll('#cadastroLojaForm input').forEach(input=>{
+    input.addEventListener('input',verificarCampos);
 });
 </script>
 

@@ -640,6 +640,40 @@ ADD COLUMN `cep` varchar(10) DEFAULT NULL,
 ADD COLUMN `cidade` varchar(100) DEFAULT NULL,
 ADD COLUMN `numero` varchar(10) DEFAULT NULL;
 
+CREATE TABLE lojas_excluidas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    loja_id INT NOT NULL,
+    nome VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    endereco VARCHAR(255),
+    bairro VARCHAR(255),
+    motivo VARCHAR(255) NOT NULL,
+    data_exclusao DATETIME NOT NULL
+);
+
+CREATE TABLE usuarios_excluidos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    nome VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    endereco VARCHAR(255),
+    bairro VARCHAR(255),
+    motivo VARCHAR(255) NOT NULL,
+    data_exclusao DATETIME NOT NULL
+);
+
+CREATE TABLE lojas_recusadas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    loja_id INT NOT NULL,
+    nome VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    endereco VARCHAR(255),
+    bairro VARCHAR(255),
+    motivo VARCHAR(255),
+    data_recusa DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
