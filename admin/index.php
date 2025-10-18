@@ -123,6 +123,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
     <title>Acesso da Loja - Platafood</title>
     <link rel="stylesheet" href="./css/index.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estado desabilitado do botão */
+button[disabled],
+button:disabled {
+    background-color: #ccc !important;
+    color: #666 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    opacity: 0.8;
+}
+
+/* Estado habilitado */
+button.btn:not(:disabled) {
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+button.btn:not(:disabled):hover {
+    background-color: #0056b3;
+}
+
+    </style>
 </head>
 <body class="login-page">
 
@@ -144,27 +168,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
     </div>
 
     <!-- CADASTRO -->
-    <div class="form-wrapper">
-        <h2>Cadastrar Nova Loja</h2>
-        <?php if ($erro_cadastro): ?><p class="error"><?= htmlspecialchars($erro_cadastro) ?></p><?php endif; ?>
-        <?php if ($sucesso_cadastro): ?><p class="success"><?= htmlspecialchars($sucesso_cadastro) ?></p><?php endif; ?>
+ <!-- CADASTRO -->
+<div class="form-wrapper">
+    <h2>Cadastrar Nova Loja</h2>
+    <?php if ($erro_cadastro): ?><p class="error"><?= htmlspecialchars($erro_cadastro) ?></p><?php endif; ?>
+    <?php if ($sucesso_cadastro): ?><p class="success"><?= htmlspecialchars($sucesso_cadastro) ?></p><?php endif; ?>
 
-        <form method="POST" id="cadastroLojaForm">
-            <div class="form-group"><label>Nome da Loja *</label><input type="text" name="nome_loja" required></div>
-            <div class="form-group"><label>E-mail de Acesso *</label><input type="email" name="email_admin" required></div>
-            <div class="form-group"><label>Senha *</label><input type="password" id="senha_cadastro" name="senha_cadastro" required minlength="6"></div>
-            <div class="form-group"><label>Confirmar Senha *</label><input type="password" id="confirmar_senha" name="confirmar_senha" required></div>
-            <div class="form-group"><label>Telefone / WhatsApp *</label><input type="tel" name="telefone" required></div>
+    <form method="POST" id="cadastroLojaForm" 
+          <!-- autocomplete="off"  ⬅️ Descomente esta linha no dia da apresentação -->
+    
+        <div class="form-group">
+            <label>Nome da Loja *</label>
+            <input type="text" name="nome_loja" required>
+        </div>
 
-            <div class="form-group"><label>CEP *</label><input type="text" id="cep_loja" name="cep_loja" maxlength="9" required></div>
-            <div class="form-group"><label>Rua *</label><input type="text" id="rua_loja" name="rua_loja" readonly required></div>
-            <div class="form-group"><label>Bairro *</label><input type="text" id="bairro_loja" name="bairro_loja" readonly required></div>
-            <div class="form-group"><label>Cidade *</label><input type="text" id="cidade_loja" name="cidade_loja" readonly required></div>
-            <div class="form-group"><label>Nº *</label><input type="text" id="numero" name="numero" required></div>
+        <div class="form-group">
+            <label>E-mail de Acesso *</label>
+            <input type="email" name="email_admin" required>
+        </div>
 
-            <button type="submit" name="cadastro" class="btn" id="btn-cadastrar" disabled>Cadastrar Loja</button>
-        </form>
-    </div>
+        <div class="form-group">
+            <label>Senha *</label>
+            <input type="password" id="senha_cadastro" name="senha_cadastro" required minlength="6">
+        </div>
+
+        <div class="form-group">
+            <label>Confirmar Senha *</label>
+            <input type="password" id="confirmar_senha" name="confirmar_senha" required>
+        </div>
+
+        <div class="form-group">
+            <label>Telefone / WhatsApp *</label>
+            <input type="tel" name="telefone" required>
+        </div>
+
+        <div class="form-group">
+            <label>CEP *</label>
+            <input type="text" id="cep_loja" name="cep_loja" maxlength="9" required>
+        </div>
+
+        <div class="form-group">
+            <label>Rua *</label>
+            <input type="text" id="rua_loja" name="rua_loja" readonly required>
+        </div>
+
+        <div class="form-group">
+            <label>Bairro *</label>
+            <input type="text" id="bairro_loja" name="bairro_loja" readonly required>
+        </div>
+
+        <div class="form-group">
+            <label>Cidade *</label>
+            <input type="text" id="cidade_loja" name="cidade_loja" readonly required>
+        </div>
+
+        <div class="form-group">
+            <label>Nº da casa *</label>
+            <input type="text" id="numero" name="numero" required>
+        </div>
+
+        <button type="submit" name="cadastro" class="btn" id="btn-cadastrar" disabled>Cadastrar Loja</button>
+    </form>
+</div>
+
 </div>
 
 <footer class="page-footer">
@@ -177,6 +243,7 @@ const ruaInput = document.getElementById('rua_loja');
 const bairroInput = document.getElementById('bairro_loja');
 const cidadeInput = document.getElementById('cidade_loja');
 const btnCadastrar = document.getElementById('btn-cadastrar');
+const form = document.getElementById('cadastroLojaForm');
 
 let cepValido = false;
 
@@ -215,8 +282,17 @@ function verificarCampos() {
     const confirmar = document.getElementById('confirmar_senha').value;
     const senhasOK = senha.length >= 6 && senha === confirmar;
 
-    btnCadastrar.disabled = !(todosPreenchidos && cepValido && senhasOK);
+    const habilitar = todosPreenchidos && cepValido && senhasOK;
+    btnCadastrar.disabled = !habilitar;
 }
+
+// 🔹 Mostra aviso se clicar antes de preencher tudo
+btnCadastrar.addEventListener('click', (e) => {
+    if (btnCadastrar.disabled) {
+        e.preventDefault();
+        alert("⚠️ Preencha todos os campos corretamente antes de cadastrar.");
+    }
+});
 
 cepInput.addEventListener('input', e => {
     const cep = e.target.value.replace(/\D/g, '');
