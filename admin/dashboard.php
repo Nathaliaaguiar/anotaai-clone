@@ -96,13 +96,7 @@ $valores_json = json_encode($valores_grafico);
                 <button type="submit" class="btn">Salvar Logo</button>
             </form>
         </div>
-        <div class="form-wrapper">
-            <h2>Preferências de Tema</h2>
-            <form id="theme-form">
-                <div class="form-group">
-                    <label class="radio-label"><input type="radio" name="theme_selector" value="tema-claro"> Tema Claro</label>
-                    <label class="radio-label"><input type="radio" name="theme_selector" value="tema-escuro"> Tema Escuro</label>
-                </div>
+       
             </form>
         </div>
     </div>

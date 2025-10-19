@@ -44,7 +44,8 @@ function is_admin_active($page_name) {
         const tema = localStorage.getItem('adminTheme') || 'tema-claro';
         document.documentElement.className = tema;
     </script>
-
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css"> <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="admin-page">
@@ -57,7 +58,7 @@ function is_admin_active($page_name) {
                     <li><a href="produtos.php" class="<?php echo is_admin_active('produtos.php'); ?>">Produtos</a></li>
                     <li><a href="categorias.php" class="<?php echo is_admin_active('categorias.php'); ?>">Categorias</a></li>
                     <li><a href="pedidos.php" class="<?php echo is_admin_active('pedidos.php'); ?>">Pedidos</a></li>
-                    <li><a href="clientes.php" class="<?php echo is_admin_active('clientes.php'); ?>">Clientes</a></li>
+                    <li><a href="clientes.php" class="<?php echo is_admin_active('clientes.php'); ?>">Perfil</a></li>
                     <li><a href="entregas.php" class="<?php echo is_admin_active('entregas.php'); ?>">Entregas</a></li>
                     <li><a href="horarios.php" class="<?php echo is_admin_active('horarios.php'); ?>">Horários</a></li>
                     <li><a href="logout.php">Sair</a></li>

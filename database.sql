@@ -42,7 +42,8 @@ CREATE TABLE `admins` (
 INSERT INTO `admins` (`id`, `loja_id`, `email`, `senha`) VALUES
 (6, 4, 'aguiar@gmail.com', '$2y$10$aND/SzBo3wd887Nh41Za.ONoX0Agwsk3Jwe9xaIx.ED60WwiFD9xy'),
 (7, 5, 'prensado@gmail.com', '$2y$10$HxBnxBY2lAmeMAEjMnpJ9OHM0mtsEo.Un/e2L8Pqa9cM1oVHAq7u.'),
-(17, 15, 'pizzari@gmail.com', '$2y$10$H6AcOu02CWTdGS3VduBf6uImKiD0ydZb3vWVEYJgkOwWjy9/3lq7a');
+(17, 15, 'pizzari@gmail.com', '$2y$10$H6AcOu02CWTdGS3VduBf6uImKiD0ydZb3vWVEYJgkOwWjy9/3lq7a'),
+(18, 16, 'sobredom@gmail.com', '$2y$10$d/KMin.RtCNuYu0VodK2h.l3tJJWQ2AwPpPNgJnq6mIGyIkvfUUnm');
 
 -- --------------------------------------------------------
 
@@ -105,7 +106,8 @@ CREATE TABLE `categorias` (
 
 INSERT INTO `categorias` (`id`, `loja_id`, `nome`, `ordem`) VALUES
 (6, 5, 'pizza', 0),
-(7, 5, 'açai', 0);
+(7, 5, 'açai', 0),
+(8, 16, 'açai', 0);
 
 -- --------------------------------------------------------
 
@@ -182,17 +184,79 @@ CREATE TABLE `lojas` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `data_analise` timestamp NULL DEFAULT NULL,
   `observacao_analise` text DEFAULT NULL,
-  `ativa` tinyint(1) DEFAULT 1
+  `ativa` tinyint(1) DEFAULT 1,
+  `cep` varchar(10) DEFAULT NULL,
+  `cidade` varchar(100) DEFAULT NULL,
+  `numero` varchar(10) DEFAULT NULL,
+  `lat` double DEFAULT NULL,
+  `lng` double DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Despejando dados para a tabela `lojas`
 --
 
-INSERT INTO `lojas` (`id`, `nome`, `email`, `senha`, `aprovado`, `telefone`, `endereco`, `bairro`, `data_criacao`, `data_analise`, `observacao_analise`, `ativa`) VALUES
-(4, 'minha loja teste', '', '', 1, NULL, NULL, NULL, '2025-09-10 17:41:47', '2025-10-16 19:44:21', NULL, 1),
-(5, 'prensado da fran', 'prensado@gmail.com', '$2y$10$HxBnxBY2lAmeMAEjMnpJ9OHM0mtsEo.Un/e2L8Pqa9cM1oVHAq7u.', 1, '21973140724', 'rua meridional', 'guacha', '2025-10-15 17:01:19', '2025-10-15 17:26:08', NULL, 1),
-(15, 'Pizzaria do Zé', 'pizzari@gmail.com', '$2y$10$H6AcOu02CWTdGS3VduBf6uImKiD0ydZb3vWVEYJgkOwWjy9/3lq7a', 1, '21987654323', 'rua aqui', 'marinha', '2025-10-16 19:36:26', '2025-10-16 19:44:13', NULL, 1);
+INSERT INTO `lojas` (`id`, `nome`, `email`, `senha`, `aprovado`, `telefone`, `endereco`, `bairro`, `data_criacao`, `data_analise`, `observacao_analise`, `ativa`, `cep`, `cidade`, `numero`, `lat`, `lng`) VALUES
+(4, 'minha loja teste', '', '', 1, NULL, NULL, NULL, '2025-09-10 17:41:47', '2025-10-16 19:44:21', NULL, 1, NULL, NULL, NULL, NULL, NULL),
+(5, 'prensado da fran', 'prensado@gmail.com', '$2y$10$HxBnxBY2lAmeMAEjMnpJ9OHM0mtsEo.Un/e2L8Pqa9cM1oVHAq7u.', 1, '21973140724', 'rua meridional', 'guacha', '2025-10-15 17:01:19', '2025-10-15 17:26:08', NULL, 1, NULL, NULL, NULL, NULL, NULL),
+(15, 'Pizzaria do Zé', 'pizzari@gmail.com', '$2y$10$H6AcOu02CWTdGS3VduBf6uImKiD0ydZb3vWVEYJgkOwWjy9/3lq7a', 1, '21987654323', 'rua aqui', 'marinha', '2025-10-16 19:36:26', '2025-10-16 19:44:13', NULL, 1, NULL, NULL, NULL, NULL, NULL),
+(16, 'Sobre Dom', 'sobredom1@gmail.com', '$2y$10$NA4fPUCvZuAs/5.CSeGGu.9BO2VhF2ZY9Hdl9pXl2pybgwIMV2Tou', 1, '21973140724', 'Rua Litoral', 'Paraíso', '2025-10-19 17:41:33', NULL, NULL, 1, '26297318', 'Nova Iguaçu', '222', -22.819177, -43.5932952);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `lojas_excluidas`
+--
+
+CREATE TABLE `lojas_excluidas` (
+  `id` int(11) NOT NULL,
+  `loja_id` int(11) NOT NULL,
+  `nome` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `endereco` varchar(255) DEFAULT NULL,
+  `bairro` varchar(255) DEFAULT NULL,
+  `motivo` varchar(255) NOT NULL,
+  `data_exclusao` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `lojas_favoritas`
+--
+
+CREATE TABLE `lojas_favoritas` (
+  `id` int(11) NOT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `loja_id` int(11) NOT NULL,
+  `criado_em` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `lojas_favoritas`
+--
+
+INSERT INTO `lojas_favoritas` (`id`, `usuario_id`, `loja_id`, `criado_em`) VALUES
+(1, 4, 4, '2025-10-19 18:13:10'),
+(3, 4, 5, '2025-10-19 18:18:31'),
+(6, 4, 16, '2025-10-19 19:01:24');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `lojas_recusadas`
+--
+
+CREATE TABLE `lojas_recusadas` (
+  `id` int(11) NOT NULL,
+  `loja_id` int(11) NOT NULL,
+  `nome` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `endereco` varchar(255) DEFAULT NULL,
+  `bairro` varchar(255) DEFAULT NULL,
+  `motivo` varchar(255) DEFAULT NULL,
+  `data_recusa` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -253,7 +317,8 @@ INSERT INTO `pedidos` (`id`, `loja_id`, `usuario_id`, `data`, `status`, `total`,
 (34, 1, 1, '2025-09-10 17:05:14', 'entregue', 12.00, 5.00, 'dinheiro', NULL),
 (35, 5, 4, '2025-10-15 17:43:31', 'entregue', 53.00, 8.00, 'dinheiro', 50.00),
 (36, 5, 4, '2025-10-16 19:12:51', 'entregue', 113.00, 8.00, 'cartao', NULL),
-(37, 5, 4, '2025-10-16 19:33:57', 'saiu_para_entrega', 53.00, 8.00, 'dinheiro', 100.00);
+(37, 5, 4, '2025-10-16 19:33:57', 'entregue', 53.00, 8.00, 'dinheiro', 100.00),
+(38, 5, 4, '2025-10-19 17:33:25', 'entregue', 23.00, 8.00, 'cartao', NULL);
 
 -- --------------------------------------------------------
 
@@ -322,7 +387,8 @@ INSERT INTO `pedido_itens` (`id`, `pedido_id`, `produto_id`, `quantidade`, `prec
 (50, 36, 12, 1, 15.00, ''),
 (51, 36, 12, 1, 15.00, ''),
 (52, 36, 12, 1, 15.00, ''),
-(53, 37, 13, 1, 45.00, '');
+(53, 37, 13, 1, 45.00, ''),
+(54, 38, 12, 1, 15.00, '');
 
 -- --------------------------------------------------------
 
@@ -353,7 +419,8 @@ INSERT INTO `produtos` (`id`, `loja_id`, `nome`, `descricao`, `preco`, `foto`, `
 (9, 2, 'pizza', 'grande', 33.00, NULL, '68c1c0040cbb1.jpg', 1, NULL),
 (12, 5, 'açai', 'asas', 15.00, 'prod_68f1355ad5b61.jpg', '68f12f7e5bde4.jpg', 1, 7),
 (13, 5, 'pizza', 'asasa', 45.00, 'prod_68f135b74947e.jpg', 'default.jpg', 1, 6),
-(15, 5, 'pizza calabacon', 'gdfg', 67.00, 'prod_68f13a969b085.jpeg', 'default.jpg', 1, 6);
+(15, 5, 'pizza calabacon', 'gdfg', 67.00, 'prod_68f13a969b085.jpeg', 'default.jpg', 1, 6),
+(16, 16, 'açai', 'assas', 14.00, 'prod_68f5366113a51.jpg', 'default.jpg', 1, 8);
 
 -- --------------------------------------------------------
 
@@ -409,18 +476,40 @@ CREATE TABLE `usuarios` (
   `endereco` text DEFAULT NULL,
   `bairro` varchar(100) DEFAULT NULL,
   `telefone` varchar(20) DEFAULT NULL,
-  `criado_em` timestamp NOT NULL DEFAULT current_timestamp()
+  `criado_em` timestamp NOT NULL DEFAULT current_timestamp(),
+  `cep` varchar(10) DEFAULT NULL,
+  `cidade` varchar(100) DEFAULT NULL,
+  `numero` varchar(10) DEFAULT NULL,
+  `lat` double DEFAULT NULL,
+  `lng` double DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Despejando dados para a tabela `usuarios`
 --
 
-INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `endereco`, `bairro`, `telefone`, `criado_em`) VALUES
-(1, 'Nathalia aguiar', 'nathaliaaguiar444@gmail.com', '$2y$10$A32VdFIEwb198vG94GaRuOkt9WEMnev4HVnygERa.TaQXZzztBK4.', 'rua meridional numero 89 jardim paraiso', 'CENTRO', '21973140724', '2025-08-20 19:34:03'),
-(2, 'anderson martins', 'anderson@gmail.com', '$2y$10$jZmvDLFs2PxfT8Td4VcCDuASshCMducOSlDmpcg/bXcWCju2G4fCe', 'Rua Meridional número 89', 'guacha', '2198989898', '2025-08-22 21:15:39'),
-(3, 'brenda', 'brenda@gmail.com', '$2y$10$nxVbnidLN8HrMJcywYoDGuiYKkLN/yoOoS1m7XpZDYK7DT1A8NJOK', 'rua a ', 'CENTRO', '21973140724', '2025-09-10 18:22:40'),
-(4, 'nathalia aguiar', 'nathalia@gmail.com', '$2y$10$w89zGNX7xFPgxYTUOCsqKukwoxWXE2PrrSI3p7/YEiN/cCtX8DtAe', 'meridional', 'aliança', '21973140724', '2025-10-15 16:40:41');
+INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `endereco`, `bairro`, `telefone`, `criado_em`, `cep`, `cidade`, `numero`, `lat`, `lng`) VALUES
+(1, 'Nathalia aguiar', 'nathaliaaguiar444@gmail.com', '$2y$10$A32VdFIEwb198vG94GaRuOkt9WEMnev4HVnygERa.TaQXZzztBK4.', 'rua meridional numero 89 jardim paraiso', 'CENTRO', '21973140724', '2025-08-20 19:34:03', NULL, NULL, NULL, NULL, NULL),
+(2, 'anderson martins', 'anderson@gmail.com', '$2y$10$jZmvDLFs2PxfT8Td4VcCDuASshCMducOSlDmpcg/bXcWCju2G4fCe', 'Rua Meridional número 89', 'guacha', '2198989898', '2025-08-22 21:15:39', NULL, NULL, NULL, NULL, NULL),
+(3, 'brenda', 'brenda@gmail.com', '$2y$10$nxVbnidLN8HrMJcywYoDGuiYKkLN/yoOoS1m7XpZDYK7DT1A8NJOK', 'rua a ', 'CENTRO', '21973140724', '2025-09-10 18:22:40', NULL, NULL, NULL, NULL, NULL),
+(4, 'nathalia aguiar', 'nathalia@gmail.com', '$2y$10$w89zGNX7xFPgxYTUOCsqKukwoxWXE2PrrSI3p7/YEiN/cCtX8DtAe', 'Rua Litoral', 'Paraíso', '21973140724', '2025-10-15 16:40:41', '26297-318', 'Nova Iguaçu', '380', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `usuarios_excluidos`
+--
+
+CREATE TABLE `usuarios_excluidos` (
+  `id` int(11) NOT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `nome` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `endereco` varchar(255) DEFAULT NULL,
+  `bairro` varchar(255) DEFAULT NULL,
+  `motivo` varchar(255) NOT NULL,
+  `data_exclusao` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Índices para tabelas despejadas
@@ -474,6 +563,26 @@ ALTER TABLE `lojas`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Índices de tabela `lojas_excluidas`
+--
+ALTER TABLE `lojas_excluidas`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Índices de tabela `lojas_favoritas`
+--
+ALTER TABLE `lojas_favoritas`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `usuario_id` (`usuario_id`,`loja_id`),
+  ADD KEY `loja_id` (`loja_id`);
+
+--
+-- Índices de tabela `lojas_recusadas`
+--
+ALTER TABLE `lojas_recusadas`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Índices de tabela `pedidos`
 --
 ALTER TABLE `pedidos`
@@ -517,6 +626,12 @@ ALTER TABLE `usuarios`
   ADD UNIQUE KEY `email` (`email`);
 
 --
+-- Índices de tabela `usuarios_excluidos`
+--
+ALTER TABLE `usuarios_excluidos`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- AUTO_INCREMENT para tabelas despejadas
 --
 
@@ -524,7 +639,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de tabela `admins`
 --
 ALTER TABLE `admins`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de tabela `admin_antigo`
@@ -542,7 +657,7 @@ ALTER TABLE `areas_entrega`
 -- AUTO_INCREMENT de tabela `categorias`
 --
 ALTER TABLE `categorias`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT de tabela `horarios_funcionamento`
@@ -554,25 +669,43 @@ ALTER TABLE `horarios_funcionamento`
 -- AUTO_INCREMENT de tabela `lojas`
 --
 ALTER TABLE `lojas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+
+--
+-- AUTO_INCREMENT de tabela `lojas_excluidas`
+--
+ALTER TABLE `lojas_excluidas`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `lojas_favoritas`
+--
+ALTER TABLE `lojas_favoritas`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT de tabela `lojas_recusadas`
+--
+ALTER TABLE `lojas_recusadas`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de tabela `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT de tabela `pedido_itens`
 --
 ALTER TABLE `pedido_itens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT de tabela `produtos`
 --
 ALTER TABLE `produtos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT de tabela `produto_opcoes`
@@ -593,6 +726,12 @@ ALTER TABLE `usuarios`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT de tabela `usuarios_excluidos`
+--
+ALTER TABLE `usuarios_excluidos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- Restrições para tabelas despejadas
 --
 
@@ -601,6 +740,13 @@ ALTER TABLE `usuarios`
 --
 ALTER TABLE `admins`
   ADD CONSTRAINT `admins_ibfk_1` FOREIGN KEY (`loja_id`) REFERENCES `lojas` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `lojas_favoritas`
+--
+ALTER TABLE `lojas_favoritas`
+  ADD CONSTRAINT `lojas_favoritas_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `lojas_favoritas_ibfk_2` FOREIGN KEY (`loja_id`) REFERENCES `lojas` (`id`) ON DELETE CASCADE;
 
 --
 -- Restrições para tabelas `pedidos`
@@ -627,56 +773,6 @@ ALTER TABLE `produtos`
 ALTER TABLE `produto_opcoes`
   ADD CONSTRAINT `produto_opcoes_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
-
--- Usuários
-ALTER TABLE `usuarios` 
-ADD COLUMN `cep` varchar(10) DEFAULT NULL,
-ADD COLUMN `cidade` varchar(100) DEFAULT NULL,
-ADD COLUMN `numero` varchar(10) DEFAULT NULL;
-
--- Admins
-ALTER TABLE `lojas` 
-ADD COLUMN `cep` varchar(10) DEFAULT NULL,
-ADD COLUMN `cidade` varchar(100) DEFAULT NULL,
-ADD COLUMN `numero` varchar(10) DEFAULT NULL;
-
-CREATE TABLE lojas_excluidas (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    loja_id INT NOT NULL,
-    nome VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    endereco VARCHAR(255),
-    bairro VARCHAR(255),
-    motivo VARCHAR(255) NOT NULL,
-    data_exclusao DATETIME NOT NULL
-);
-
-CREATE TABLE usuarios_excluidos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id INT NOT NULL,
-    nome VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    endereco VARCHAR(255),
-    bairro VARCHAR(255),
-    motivo VARCHAR(255) NOT NULL,
-    data_exclusao DATETIME NOT NULL
-);
-
-CREATE TABLE lojas_recusadas (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    loja_id INT NOT NULL,
-    nome VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    endereco VARCHAR(255),
-    bairro VARCHAR(255),
-    motivo VARCHAR(255),
-    data_recusa DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-ALTER TABLE usuarios ADD COLUMN lat DOUBLE NULL, ADD COLUMN lng DOUBLE NULL;
-ALTER TABLE lojas ADD COLUMN lat DOUBLE NULL, ADD COLUMN lng DOUBLE NULL;
-
-
-
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
