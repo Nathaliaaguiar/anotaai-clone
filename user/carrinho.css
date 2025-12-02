@@ -1,0 +1,295 @@
+/* ==========================================================================
+   ESTILOS DA PÁGINA DO CARRINHO (carrinho.css)
+   ========================================================================== */
+
+/* 1. Container Principal */
+.carrinho {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+.carrinho h1 {
+    text-align: center;
+    font-size: 2rem;
+    color: #2c3e50;
+    margin-bottom: 30px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.carrinho h1::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 4px;
+    background-color: #e67e22; /* Laranja da marca */
+    margin: 10px auto 0;
+    border-radius: 2px;
+}
+
+/* Estado Vazio */
+.carrinho p {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #7f8c8d;
+    margin-bottom: 20px;
+}
+
+/* 2. Tabela de Itens */
+.tabela-carrinho {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+}
+
+.tabela-carrinho th {
+    background-color: #f8f9fa;
+    color: #555;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.tabela-carrinho td {
+    padding: 20px 15px;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+}
+
+/* Detalhes do Produto na Tabela */
+.tabela-carrinho td strong {
+    font-size: 1.1rem;
+    color: #2c3e50;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.tabela-carrinho td small {
+    display: block;
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Colunas de valores numéricos alinhadas para melhor leitura */
+.tabela-carrinho td:nth-child(2),
+.tabela-carrinho td:nth-child(4) {
+    font-family: 'Consolas', 'Monaco', monospace; /* Fonte monoespaçada para preços */
+    font-weight: 600;
+    color: #555;
+}
+
+/* 3. Botões */
+
+/* Botão Genérico (Voltar / Finalizar) */
+.btn {
+    display: inline-block;
+    background-color: #e67e22;
+    color: #fff;
+    padding: 12px 25px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+    transition: background-color 0.3s ease, transform 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #d35400;
+    transform: translateY(-2px);
+}
+
+/* Botão Remover (Estilo "Link perigoso") */
+.btn-remover {
+    color: #e74c3c;
+    background-color: transparent;
+    border: 1px solid #e74c3c;
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-remover:hover {
+    background-color: #e74c3c;
+    color: #fff;
+}
+
+/* 4. Rodapé do Carrinho (Total e Ação) */
+.carrinho-total {
+    background-color: #fafafa;
+    padding: 25px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Alinha tudo à direita */
+    gap: 15px;
+}
+
+.carrinho-total h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin: 0;
+}
+
+/* Destaque para o valor total */
+/* 4. Rodapé do Carrinho (Total e Botão na mesma linha) */
+.carrinho-total {
+    background-color: #f8f9fa; /* Fundo cinza bem suave */
+    padding: 20px 30px;        /* Espaçamento interno equilibrado */
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    margin-top: 30px;
+    
+    /* MÁGICA AQUI: Coloca lado a lado */
+    display: flex;
+    justify-content: flex-end; /* Alinha tudo à direita */
+    align-items: center;       /* Centraliza verticalmente */
+    gap: 25px;                 /* Espaço entre o preço e o botão */
+}
+
+.carrinho-total h3 {
+    font-size: 1.3rem;         /* Tamanho da fonte do preço */
+    color: #333;
+    margin: 0;
+    font-weight: 700;
+}
+
+/* Botão mais discreto e elegante */
+.btn {
+    display: inline-block;
+    background-color: #e67e22;
+    color: #fff;
+    padding: 10px 25px;        /* Largura boa, altura contida */
+    font-size: 0.95rem;        /* Tamanho de fonte legível */
+    border-radius: 4px;        /* Cantos levemente arredondados */
+    text-decoration: none;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s;
+    box-shadow: 0 2px 5px rgba(230, 126, 34, 0.2); /* Sombra suave laranja */
+}
+
+.btn:hover {
+    background-color: #d35400;
+    box-shadow: 0 4px 8px rgba(230, 126, 34, 0.3);
+    transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   AJUSTE MOBILE (No celular, volta a ficar um embaixo do outro)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .carrinho-total {
+        flex-direction: column; /* Um embaixo do outro */
+        text-align: center;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .btn {
+        width: 100%;            /* Botão grande no dedo */
+        padding: 12px 0;
+    }
+}
+/* ==========================================================================
+   RESPONSIVIDADE (Mobile)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .carrinho {
+        padding: 15px;
+        margin: 20px 10px;
+    }
+
+    /* Transformar tabela em Cards no celular */
+    .tabela-carrinho, 
+    .tabela-carrinho tbody, 
+    .tabela-carrinho tr, 
+    .tabela-carrinho td {
+        display: block;
+        width: 100%;
+    }
+
+    .tabela-carrinho thead {
+        display: none; /* Esconde o cabeçalho da tabela */
+    }
+
+    .tabela-carrinho tr {
+        margin-bottom: 20px;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+
+    .tabela-carrinho td {
+        padding: 8px 0;
+        border-bottom: 1px dashed #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: right;
+    }
+
+    .tabela-carrinho td:last-child {
+        border-bottom: none;
+        justify-content: center; /* Centraliza botão remover */
+        padding-top: 15px;
+    }
+
+    /* Adiciona labels antes dos valores (pseudo-elementos) */
+    .tabela-carrinho td:nth-child(2)::before {
+        content: "Preço Unit.:";
+        font-weight: bold;
+        color: #777;
+        margin-right: 10px;
+    }
+    .tabela-carrinho td:nth-child(3)::before {
+        content: "Quantidade:";
+        font-weight: bold;
+        color: #777;
+        margin-right: 10px;
+    }
+    .tabela-carrinho td:nth-child(4)::before {
+        content: "Subtotal:";
+        font-weight: bold;
+        color: #333;
+        margin-right: 10px;
+    }
+
+    /* Ajuste do rodapé no mobile */
+    .carrinho-total {
+        align-items: center; /* Centraliza no mobile */
+        text-align: center;
+    }
+    
+    .carrinho-total .btn {
+        width: 100%; /* Botão largura total */
+    }
+}
+/* Efeito de destaque ao passar o mouse na linha (Ótimo para apresentação) */
+.tabela-carrinho tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.tabela-carrinho tbody tr:hover {
+    background-color: #fff8e1; /* Um laranja super clarinho e elegante */
+    cursor: default;
+}

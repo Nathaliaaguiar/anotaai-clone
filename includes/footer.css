@@ -1,0 +1,161 @@
+/* ==========================================================================
+   RODAPÉ (footer.css)
+   ========================================================================== */
+
+/* Cores e Variáveis Locais */
+:root {
+    --footer-bg: #1a1d24;       /* Fundo escuro elegante */
+    --footer-text: #b2bec3;     /* Texto cinza claro */
+    --footer-title: #ffffff;    /* Títulos em branco */
+    --footer-accent: #ff6f00;   /* Laranja da marca */
+    --footer-border: rgba(255, 255, 255, 0.1);
+}
+
+/* Garante que o rodapé fique no final mesmo com pouco conteúdo */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main.container {
+    flex: 1;
+}
+
+/* Container Principal do Footer */
+.site-footer {
+    background-color: var(--footer-bg);
+    color: var(--footer-text);
+    padding: 60px 0 20px;
+    margin-top: auto; /* Empurra para o fundo */
+    font-size: 0.95rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border-top: 4px solid var(--footer-accent);
+}
+
+.footer-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+}
+
+/* Colunas */
+.footer-col h3 {
+    color: var(--footer-title);
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    position: relative;
+    padding-bottom: 10px;
+    font-weight: 700;
+}
+
+/* Detalhe embaixo do título */
+.footer-col h3::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 40px;
+    height: 3px;
+    background-color: var(--footer-accent);
+    border-radius: 2px;
+}
+
+/* Logo e Texto */
+.footer-brand {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #fff;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 15px;
+    letter-spacing: -1px;
+}
+.footer-brand span { color: var(--footer-accent); }
+
+.footer-col p {
+    line-height: 1.6;
+    margin-bottom: 20px;
+    opacity: 0.8;
+}
+
+/* Links de Navegação */
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 12px;
+}
+
+.footer-links a {
+    color: var(--footer-text);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-links a:hover {
+    color: var(--footer-accent);
+    transform: translateX(5px); /* Efeito de mover para direita */
+}
+
+/* Ícones Sociais */
+.social-icons {
+    display: flex;
+    gap: 15px;
+}
+
+.social-btn {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.3s;
+    font-size: 1.1rem;
+}
+
+.social-btn:hover {
+    background-color: var(--footer-accent);
+    transform: translateY(-3px);
+}
+
+/* Barra de Copyright (Fundo) */
+.footer-bottom {
+    border-top: 1px solid var(--footer-border);
+    margin-top: 50px;
+    padding-top: 25px;
+    text-align: center;
+    font-size: 0.85rem;
+    opacity: 0.6;
+}
+
+/* Responsividade Mobile */
+@media (max-width: 768px) {
+    .footer-grid {
+        grid-template-columns: 1fr; /* Uma coluna só */
+        text-align: center;
+        gap: 30px;
+    }
+    
+    .footer-col h3::after {
+        left: 50%;
+        transform: translateX(-50%); /* Centraliza o sublinhado */
+    }
+    
+    .social-icons {
+        justify-content: center;
+    }
+}

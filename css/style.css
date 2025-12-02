@@ -1545,9 +1545,7 @@ p.error {
     font-size: 1rem;
     transition: background-color 0.3s ease;
 }
-.btn:hover {
-    background-color: #1c5980;
-}
+
 /* Lista de lojas */
 .lista-wrapper {
     background-color: #fff;

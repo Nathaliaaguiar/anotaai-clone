@@ -40,10 +40,7 @@ CREATE TABLE `admins` (
 --
 
 INSERT INTO `admins` (`id`, `loja_id`, `email`, `senha`) VALUES
-(6, 4, 'aguiar@gmail.com', '$2y$10$aND/SzBo3wd887Nh41Za.ONoX0Agwsk3Jwe9xaIx.ED60WwiFD9xy'),
-(7, 5, 'prensado@gmail.com', '$2y$10$HxBnxBY2lAmeMAEjMnpJ9OHM0mtsEo.Un/e2L8Pqa9cM1oVHAq7u.'),
-(17, 15, 'pizzari@gmail.com', '$2y$10$H6AcOu02CWTdGS3VduBf6uImKiD0ydZb3vWVEYJgkOwWjy9/3lq7a'),
-(18, 16, 'sobredom@gmail.com', '$2y$10$d/KMin.RtCNuYu0VodK2h.l3tJJWQ2AwPpPNgJnq6mIGyIkvfUUnm');
+(19, 17, 'acaimaria@gmail.com', '$2y$10$Yl81lxfMqtpBMgAbhIeY6OfbdtRV.B0FYyn1gLTzhEEtX2.xPkdN6');
 
 -- --------------------------------------------------------
 
@@ -82,10 +79,7 @@ CREATE TABLE `areas_entrega` (
 --
 
 INSERT INTO `areas_entrega` (`id`, `loja_id`, `bairro`, `taxa_entrega`) VALUES
-(6, 4, 'CENTRO', 8.00),
-(7, 5, 'guacha', 0.00),
-(11, 5, 'aliança', 8.00),
-(18, 15, 'marinha', 0.00);
+(19, 17, 'paraíso', 8.00);
 
 -- --------------------------------------------------------
 
@@ -105,9 +99,8 @@ CREATE TABLE `categorias` (
 --
 
 INSERT INTO `categorias` (`id`, `loja_id`, `nome`, `ordem`) VALUES
-(6, 5, 'pizza', 0),
-(7, 5, 'açai', 0),
-(8, 16, 'açai', 0);
+(9, 17, 'Açai', 0),
+(10, 17, 'Coca-cola', 0);
 
 -- --------------------------------------------------------
 
@@ -126,17 +119,8 @@ CREATE TABLE `configuracoes` (
 --
 
 INSERT INTO `configuracoes` (`loja_id`, `chave`, `valor`) VALUES
-(4, 'nome_loja', 'loja teste'),
-(5, 'bairro', 'guacha'),
-(5, 'email_contato', 'prensado@gmail.com'),
-(5, 'endereco', 'rua meridional'),
-(5, 'nome_loja', 'Prensado da Fran'),
-(5, 'telefone', '21973140724'),
-(15, 'bairro', 'marinha'),
-(15, 'email_contato', 'pizzari@gmail.com'),
-(15, 'endereco', 'rua aqui'),
-(15, 'nome_loja', 'Pizzaria do Zé'),
-(15, 'telefone', '21987654323');
+(17, 'nome_loja', 'Açaí da Maria'),
+(18, 'nome_loja', 'lugarzinho');
 
 -- --------------------------------------------------------
 
@@ -158,13 +142,13 @@ CREATE TABLE `horarios_funcionamento` (
 --
 
 INSERT INTO `horarios_funcionamento` (`id`, `loja_id`, `dia_semana`, `ativo`, `horario_abertura`, `horario_fechamento`) VALUES
-(15, 5, 0, 1, '08:00:00', '22:00:00'),
-(16, 5, 1, 1, '08:00:00', '22:00:00'),
-(17, 5, 2, 1, '08:00:00', '22:00:00'),
-(18, 5, 3, 1, '08:00:00', '22:00:00'),
-(19, 5, 4, 1, '08:00:00', '22:00:00'),
-(20, 5, 5, 1, '08:00:00', '22:00:00'),
-(21, 5, 6, 1, '08:00:00', '22:00:00');
+(190, 17, 0, 1, '09:00:00', '18:00:00'),
+(191, 17, 1, 1, '09:00:00', '18:00:00'),
+(192, 17, 2, 1, '09:00:00', '18:00:00'),
+(193, 17, 3, 1, '09:00:00', '18:00:00'),
+(194, 17, 4, 1, '09:00:00', '18:00:00'),
+(195, 17, 5, 1, '09:00:00', '18:00:00'),
+(196, 17, 6, 1, '09:00:00', '18:00:00');
 
 -- --------------------------------------------------------
 
@@ -187,20 +171,22 @@ CREATE TABLE `lojas` (
   `ativa` tinyint(1) DEFAULT 1,
   `cep` varchar(10) DEFAULT NULL,
   `cidade` varchar(100) DEFAULT NULL,
+  `estado` varchar(2) DEFAULT NULL,
   `numero` varchar(10) DEFAULT NULL,
   `lat` double DEFAULT NULL,
-  `lng` double DEFAULT NULL
+  `lng` double DEFAULT NULL,
+  `latitude` decimal(10,8) DEFAULT NULL,
+  `longitude` decimal(11,8) DEFAULT NULL,
+  `logo` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Despejando dados para a tabela `lojas`
 --
 
-INSERT INTO `lojas` (`id`, `nome`, `email`, `senha`, `aprovado`, `telefone`, `endereco`, `bairro`, `data_criacao`, `data_analise`, `observacao_analise`, `ativa`, `cep`, `cidade`, `numero`, `lat`, `lng`) VALUES
-(4, 'minha loja teste', '', '', 1, NULL, NULL, NULL, '2025-09-10 17:41:47', '2025-10-16 19:44:21', NULL, 1, NULL, NULL, NULL, NULL, NULL),
-(5, 'prensado da fran', 'prensado@gmail.com', '$2y$10$HxBnxBY2lAmeMAEjMnpJ9OHM0mtsEo.Un/e2L8Pqa9cM1oVHAq7u.', 1, '21973140724', 'rua meridional', 'guacha', '2025-10-15 17:01:19', '2025-10-15 17:26:08', NULL, 1, NULL, NULL, NULL, NULL, NULL),
-(15, 'Pizzaria do Zé', 'pizzari@gmail.com', '$2y$10$H6AcOu02CWTdGS3VduBf6uImKiD0ydZb3vWVEYJgkOwWjy9/3lq7a', 1, '21987654323', 'rua aqui', 'marinha', '2025-10-16 19:36:26', '2025-10-16 19:44:13', NULL, 1, NULL, NULL, NULL, NULL, NULL),
-(16, 'Sobre Dom', 'sobredom1@gmail.com', '$2y$10$NA4fPUCvZuAs/5.CSeGGu.9BO2VhF2ZY9Hdl9pXl2pybgwIMV2Tou', 1, '21973140724', 'Rua Litoral', 'Paraíso', '2025-10-19 17:41:33', NULL, NULL, 1, '26297318', 'Nova Iguaçu', '222', -22.819177, -43.5932952);
+INSERT INTO `lojas` (`id`, `nome`, `email`, `senha`, `aprovado`, `telefone`, `endereco`, `bairro`, `data_criacao`, `data_analise`, `observacao_analise`, `ativa`, `cep`, `cidade`, `estado`, `numero`, `lat`, `lng`, `latitude`, `longitude`, `logo`) VALUES
+(17, 'Açaí da Maria', 'acaimaria@gmail.com', '$2y$10$Yl81lxfMqtpBMgAbhIeY6OfbdtRV.B0FYyn1gLTzhEEtX2.xPkdN6', 1, '21993546758', 'Rua Litoral', 'Paraíso', '2025-11-06 17:35:52', NULL, NULL, 1, '26297-318', 'Nova Iguaçu', NULL, '472', -22.819177, -43.5932952, NULL, NULL, 'logo_loja_17.png'),
+(18, 'lugarzinho', 'lugarzinho@gmail.com', '$2y$10$mZqMU8WtnIRgNi7TBj1DsOnVMoqTxdVVmCjKrKC9Ff740KZ70bDG2', 1, NULL, 'Rua Litoral', 'Paraíso', '2025-12-02 18:24:12', NULL, NULL, 1, '26297318', 'Nova Iguaçu', 'RJ', NULL, NULL, NULL, -22.81917700, -43.59329520, NULL);
 
 -- --------------------------------------------------------
 
@@ -218,6 +204,16 @@ CREATE TABLE `lojas_excluidas` (
   `motivo` varchar(255) NOT NULL,
   `data_exclusao` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `lojas_excluidas`
+--
+
+INSERT INTO `lojas_excluidas` (`id`, `loja_id`, `nome`, `email`, `endereco`, `bairro`, `motivo`, `data_exclusao`) VALUES
+(1, 4, 'minha loja teste', '', NULL, NULL, 'Descumprimento das diretrizes', '2025-12-02 12:55:57'),
+(2, 15, 'Pizzaria do Zé', 'pizzari@gmail.com', 'rua aqui', 'marinha', 'Descumprimento das diretrizes', '2025-12-02 12:56:06'),
+(3, 5, 'prensado da fran', 'prensado@gmail.com', 'rua meridional', 'guacha', 'Descumprimento das diretrizes', '2025-12-02 12:56:10'),
+(4, 16, 'Sobre Dom', 'sobredom1@gmail.com', 'Rua Litoral', 'Paraíso', 'Descumprimento das diretrizes', '2025-12-02 12:56:19');
 
 -- --------------------------------------------------------
 
@@ -237,9 +233,8 @@ CREATE TABLE `lojas_favoritas` (
 --
 
 INSERT INTO `lojas_favoritas` (`id`, `usuario_id`, `loja_id`, `criado_em`) VALUES
-(1, 4, 4, '2025-10-19 18:13:10'),
-(3, 4, 5, '2025-10-19 18:18:31'),
-(6, 4, 16, '2025-10-19 19:01:24');
+(8, 1, 17, '2025-11-11 11:56:16'),
+(11, 5, 17, '2025-12-02 17:58:18');
 
 -- --------------------------------------------------------
 
@@ -281,44 +276,34 @@ CREATE TABLE `pedidos` (
 --
 
 INSERT INTO `pedidos` (`id`, `loja_id`, `usuario_id`, `data`, `status`, `total`, `taxa_entrega`, `metodo_pagamento`, `troco_para`) VALUES
-(1, 1, 1, '2025-08-20 19:52:19', 'entregue', 130.50, 0.00, 'dinheiro', NULL),
-(2, 1, 1, '2025-08-20 20:39:45', 'entregue', 55.00, 0.00, 'dinheiro', NULL),
-(3, 1, 1, '2025-08-20 20:45:32', 'entregue', 27.50, 0.00, 'dinheiro', 100.00),
-(4, 1, 1, '2025-08-20 20:56:30', 'entregue', 27.50, 0.00, 'pix', NULL),
-(5, 1, 1, '2025-08-20 21:02:45', 'entregue', 27.50, 0.00, 'pix', NULL),
-(6, 1, 1, '2025-08-20 21:04:29', 'entregue', 27.50, 0.00, 'pix', NULL),
-(7, 1, 1, '2025-08-20 21:09:57', 'entregue', 27.50, 0.00, 'pix', NULL),
-(8, 1, 1, '2025-08-22 18:19:23', 'entregue', 357.50, 0.00, 'pix', NULL),
-(9, 1, 1, '2025-08-22 19:32:59', 'entregue', 34.50, 0.00, 'cartao', NULL),
-(10, 1, 1, '2025-08-22 20:11:07', 'entregue', 26.00, 0.00, 'cartao', NULL),
-(11, 1, 1, '2025-08-22 20:13:41', 'entregue', 26.00, 0.00, 'cartao', NULL),
-(12, 1, 1, '2025-08-22 20:42:27', 'entregue', 55.00, 0.00, 'cartao', NULL),
-(13, 1, 1, '2025-08-22 20:48:50', 'entregue', 53.50, 0.00, 'cartao', NULL),
-(14, 1, 1, '2025-08-22 20:55:43', 'entregue', 53.50, 0.00, 'cartao', NULL),
-(15, 1, 2, '2025-08-22 21:17:24', 'entregue', 30.00, 4.00, '', NULL),
-(16, 1, 2, '2025-08-22 21:17:55', 'entregue', 30.00, 4.00, '', NULL),
-(17, 1, 2, '2025-08-22 21:21:07', 'entregue', 31.50, 4.00, 'cartao', NULL),
-(18, 1, 2, '2025-08-22 21:35:04', 'entregue', 30.00, 4.00, 'cartao', NULL),
-(19, 1, 2, '2025-08-23 19:11:59', 'entregue', 31.50, 4.00, 'cartao', NULL),
-(20, 1, 2, '2025-08-23 19:48:40', 'entregue', 31.50, 4.00, 'cartao', NULL),
-(21, 1, 2, '2025-08-23 20:59:42', 'entregue', 30.00, 4.00, 'cartao', NULL),
-(22, 1, 2, '2025-08-23 21:23:01', 'entregue', 77.00, 4.00, 'cartao', NULL),
-(23, 1, 2, '2025-08-23 21:42:48', 'entregue', 30.00, 4.00, 'cartao', NULL),
-(24, 1, 2, '2025-08-23 21:47:36', 'entregue', 37.00, 4.00, 'cartao', NULL),
-(25, 1, 2, '2025-08-23 21:51:09', 'entregue', 30.00, 4.00, 'cartao', NULL),
-(26, 1, 2, '2025-08-23 21:53:52', 'entregue', 30.00, 4.00, 'cartao', NULL),
-(27, 1, 2, '2025-08-23 21:57:26', 'entregue', 30.00, 4.00, 'cartao', NULL),
-(28, 1, 1, '2025-08-25 18:38:29', 'entregue', 32.50, 5.00, 'pix', NULL),
-(29, 1, 2, '2025-08-27 11:43:51', 'entregue', 57.50, 4.00, 'cartao', NULL),
-(30, 1, 2, '2025-08-27 12:10:04', 'entregue', 31.50, 4.00, 'dinheiro', NULL),
-(31, NULL, 1, '2025-08-27 19:02:08', 'saiu_para_entrega', 64.00, 5.00, 'dinheiro', NULL),
-(32, NULL, 1, '2025-08-27 21:34:09', 'pendente', 15.00, 5.00, 'cartao', NULL),
-(33, 1, 1, '2025-08-27 21:41:28', 'entregue', 31.00, 5.00, 'dinheiro', NULL),
-(34, 1, 1, '2025-09-10 17:05:14', 'entregue', 12.00, 5.00, 'dinheiro', NULL),
-(35, 5, 4, '2025-10-15 17:43:31', 'entregue', 53.00, 8.00, 'dinheiro', 50.00),
-(36, 5, 4, '2025-10-16 19:12:51', 'entregue', 113.00, 8.00, 'cartao', NULL),
-(37, 5, 4, '2025-10-16 19:33:57', 'entregue', 53.00, 8.00, 'dinheiro', 100.00),
-(38, 5, 4, '2025-10-19 17:33:25', 'entregue', 23.00, 8.00, 'cartao', NULL);
+(1, 1, 1, '2025-08-20 22:52:19', 'entregue', 130.50, 0.00, 'dinheiro', NULL),
+(2, 1, 1, '2025-08-20 23:39:45', 'entregue', 55.00, 0.00, 'dinheiro', NULL),
+(3, 1, 1, '2025-08-20 23:45:32', 'entregue', 27.50, 0.00, 'dinheiro', 100.00),
+(4, 1, 1, '2025-08-20 23:56:30', 'entregue', 27.50, 0.00, 'pix', NULL),
+(5, 1, 1, '2025-08-21 00:02:45', 'entregue', 27.50, 0.00, 'pix', NULL),
+(6, 1, 1, '2025-08-21 00:04:29', 'entregue', 27.50, 0.00, 'pix', NULL),
+(7, 1, 1, '2025-08-21 00:09:57', 'entregue', 27.50, 0.00, 'pix', NULL),
+(8, 1, 1, '2025-08-22 21:19:23', 'entregue', 357.50, 0.00, 'pix', NULL),
+(9, 1, 1, '2025-08-22 22:32:59', 'entregue', 34.50, 0.00, 'cartao', NULL),
+(10, 1, 1, '2025-08-22 23:11:07', 'entregue', 26.00, 0.00, 'cartao', NULL),
+(11, 1, 1, '2025-08-22 23:13:41', 'entregue', 26.00, 0.00, 'cartao', NULL),
+(12, 1, 1, '2025-08-22 23:42:27', 'entregue', 55.00, 0.00, 'cartao', NULL),
+(13, 1, 1, '2025-08-22 23:48:50', 'entregue', 53.50, 0.00, 'cartao', NULL),
+(14, 1, 1, '2025-08-22 23:55:43', 'entregue', 53.50, 0.00, 'cartao', NULL),
+(28, 1, 1, '2025-08-25 21:38:29', 'entregue', 32.50, 5.00, 'pix', NULL),
+(31, NULL, 1, '2025-08-27 22:02:08', 'saiu_para_entrega', 64.00, 5.00, 'dinheiro', NULL),
+(32, NULL, 1, '2025-08-28 00:34:09', 'pendente', 15.00, 5.00, 'cartao', NULL),
+(33, 1, 1, '2025-08-28 00:41:28', 'entregue', 31.00, 5.00, 'dinheiro', NULL),
+(34, 1, 1, '2025-09-10 20:05:14', 'entregue', 12.00, 5.00, 'dinheiro', NULL),
+(35, 5, 4, '2025-10-15 20:43:31', 'entregue', 53.00, 8.00, 'dinheiro', 50.00),
+(36, 5, 4, '2025-10-16 22:12:51', 'entregue', 113.00, 8.00, 'cartao', NULL),
+(37, 5, 4, '2025-10-16 22:33:57', 'entregue', 53.00, 8.00, 'dinheiro', 100.00),
+(38, 5, 4, '2025-10-19 20:33:25', 'entregue', 23.00, 8.00, 'cartao', NULL),
+(39, 17, 5, '2025-11-06 17:49:43', 'entregue', 20.00, 8.00, 'dinheiro', 50.00),
+(40, 17, 1, '2025-11-11 11:54:14', 'entregue', 20.00, 8.00, 'dinheiro', NULL),
+(41, 17, 1, '2025-11-11 12:15:47', 'entregue', 20.00, 8.00, 'dinheiro', 50.00),
+(42, 17, 5, '2025-11-11 12:32:53', 'entregue', 20.00, 8.00, 'dinheiro', NULL),
+(43, 17, 5, '2025-12-02 19:32:47', 'cancelado', 32.00, 8.00, 'dinheiro', NULL);
 
 -- --------------------------------------------------------
 
@@ -357,26 +342,7 @@ INSERT INTO `pedido_itens` (`id`, `pedido_id`, `produto_id`, `quantidade`, `prec
 (18, 13, 5, 1, 27.50, 'Opção: Com linguiça.'),
 (19, 14, 5, 1, 26.00, ''),
 (20, 14, 5, 1, 27.50, 'Opção: Com linguiça.'),
-(21, 17, 5, 1, 27.50, 'Opção: Com linguiça.'),
-(22, 18, 5, 1, 26.00, ''),
-(23, 19, 5, 1, 27.50, 'Opção: Com linguiça.'),
-(24, 20, 5, 1, 27.50, 'Opção: Com linguiça.'),
-(25, 21, 5, 1, 26.00, ''),
-(26, 22, 5, 1, 26.00, ''),
-(27, 22, 6, 1, 7.00, ''),
-(28, 22, 5, 1, 26.00, ''),
-(29, 22, 6, 1, 7.00, ''),
-(30, 22, 6, 1, 7.00, ''),
-(31, 23, 5, 1, 26.00, ''),
-(32, 24, 6, 1, 7.00, ''),
-(33, 24, 5, 1, 26.00, ''),
-(34, 25, 5, 1, 26.00, ''),
-(35, 26, 5, 1, 26.00, ''),
-(36, 27, 5, 1, 26.00, ''),
 (37, 28, 5, 1, 27.50, 'Opção: Com linguiça.'),
-(38, 29, 5, 1, 27.50, 'Opção: Com linguiça.'),
-(39, 29, 5, 1, 26.00, ''),
-(40, 30, 5, 1, 27.50, 'Opção: Com linguiça.'),
 (41, 31, 5, 1, 26.00, ''),
 (42, 31, 6, 1, 7.00, ''),
 (43, 31, 5, 1, 26.00, ''),
@@ -388,7 +354,13 @@ INSERT INTO `pedido_itens` (`id`, `pedido_id`, `produto_id`, `quantidade`, `prec
 (51, 36, 12, 1, 15.00, ''),
 (52, 36, 12, 1, 15.00, ''),
 (53, 37, 13, 1, 45.00, ''),
-(54, 38, 12, 1, 15.00, '');
+(54, 38, 12, 1, 15.00, ''),
+(55, 39, 17, 1, 12.00, ''),
+(56, 40, 17, 1, 12.00, ''),
+(57, 41, 17, 1, 12.00, ''),
+(58, 42, 17, 1, 12.00, ''),
+(59, 43, 17, 1, 12.00, ''),
+(60, 43, 17, 1, 12.00, '');
 
 -- --------------------------------------------------------
 
@@ -417,10 +389,12 @@ INSERT INTO `produtos` (`id`, `loja_id`, `nome`, `descricao`, `preco`, `foto`, `
 (6, 1, 'Coca-cola', 'lata 500ml', 7.00, NULL, '68a8c2113980d.jpg', 1, NULL),
 (8, 1, 'pizza', 'pizza familia', 33.00, NULL, '68c1b1dcb7fb4.jpg', 1, NULL),
 (9, 2, 'pizza', 'grande', 33.00, NULL, '68c1c0040cbb1.jpg', 1, NULL),
-(12, 5, 'açai', 'asas', 15.00, 'prod_68f1355ad5b61.jpg', '68f12f7e5bde4.jpg', 1, 7),
-(13, 5, 'pizza', 'asasa', 45.00, 'prod_68f135b74947e.jpg', 'default.jpg', 1, 6),
-(15, 5, 'pizza calabacon', 'gdfg', 67.00, 'prod_68f13a969b085.jpeg', 'default.jpg', 1, 6),
-(16, 16, 'açai', 'assas', 14.00, 'prod_68f5366113a51.jpg', 'default.jpg', 1, 8);
+(12, 5, 'açai', 'asas', 15.00, 'prod_68f1355ad5b61.jpg', '68f12f7e5bde4.jpg', 1, NULL),
+(13, 5, 'pizza', 'asasa', 45.00, 'prod_68f135b74947e.jpg', 'default.jpg', 1, NULL),
+(15, 5, 'pizza calabacon', 'gdfg', 67.00, 'prod_68f13a969b085.jpeg', 'default.jpg', 1, NULL),
+(16, 16, 'açai', 'assas', 14.00, 'prod_68f5366113a51.jpg', 'default.jpg', 1, NULL),
+(17, 17, 'Açai', 'Frutas: Banana em rodelas, morangos, kiwi, etc.\r\nCereais: Granola, aveia, flocos de arroz\r\nCremes e Doces: Leite condensado, leite em pó, creme de avelã com chocolate\r\nOutros: Mel, paçoca triturada, coco ralado,', 12.00, 'prod_692f0c515be29.jpg', 'default.jpg', 1, 9),
+(18, 17, 'Coca-cola', '', 12.00, '692f280322056.jpg', 'default.jpg', 1, 10);
 
 -- --------------------------------------------------------
 
@@ -460,7 +434,7 @@ CREATE TABLE `super_admins` (
 --
 
 INSERT INTO `super_admins` (`id`, `email`, `senha`, `data_criacao`) VALUES
-(1, 'master@email.com', '$2y$10$nB2t2TOFkdrC71wrjesYaOv.Tpp3dpFFX7Fg4rBjIlLKrrYdqM3me', '2025-08-27 20:01:55');
+(1, 'master@email.com', '$2y$10$nB2t2TOFkdrC71wrjesYaOv.Tpp3dpFFX7Fg4rBjIlLKrrYdqM3me', '2025-08-27 23:01:55');
 
 -- --------------------------------------------------------
 
@@ -489,10 +463,10 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `endereco`, `bairro`, `telefone`, `criado_em`, `cep`, `cidade`, `numero`, `lat`, `lng`) VALUES
-(1, 'Nathalia aguiar', 'nathaliaaguiar444@gmail.com', '$2y$10$A32VdFIEwb198vG94GaRuOkt9WEMnev4HVnygERa.TaQXZzztBK4.', 'rua meridional numero 89 jardim paraiso', 'CENTRO', '21973140724', '2025-08-20 19:34:03', NULL, NULL, NULL, NULL, NULL),
-(2, 'anderson martins', 'anderson@gmail.com', '$2y$10$jZmvDLFs2PxfT8Td4VcCDuASshCMducOSlDmpcg/bXcWCju2G4fCe', 'Rua Meridional número 89', 'guacha', '2198989898', '2025-08-22 21:15:39', NULL, NULL, NULL, NULL, NULL),
-(3, 'brenda', 'brenda@gmail.com', '$2y$10$nxVbnidLN8HrMJcywYoDGuiYKkLN/yoOoS1m7XpZDYK7DT1A8NJOK', 'rua a ', 'CENTRO', '21973140724', '2025-09-10 18:22:40', NULL, NULL, NULL, NULL, NULL),
-(4, 'nathalia aguiar', 'nathalia@gmail.com', '$2y$10$w89zGNX7xFPgxYTUOCsqKukwoxWXE2PrrSI3p7/YEiN/cCtX8DtAe', 'Rua Litoral', 'Paraíso', '21973140724', '2025-10-15 16:40:41', '26297-318', 'Nova Iguaçu', '380', NULL, NULL);
+(1, 'Nathalia aguiar', 'nathaliaaguiar444@gmail.com', '$2y$10$A32VdFIEwb198vG94GaRuOkt9WEMnev4HVnygERa.TaQXZzztBK4.', 'Rua Meridional', 'Paraíso', '21973140724', '2025-08-20 22:34:03', '26297-327', 'Nova Iguaçu', '343', NULL, NULL),
+(3, 'brenda', 'brenda@gmail.com', '$2y$10$nxVbnidLN8HrMJcywYoDGuiYKkLN/yoOoS1m7XpZDYK7DT1A8NJOK', 'rua a ', 'CENTRO', '21973140724', '2025-09-10 21:22:40', NULL, NULL, NULL, NULL, NULL),
+(4, 'nathalia aguiar', 'nathalia@gmail.com', '$2y$10$w89zGNX7xFPgxYTUOCsqKukwoxWXE2PrrSI3p7/YEiN/cCtX8DtAe', 'Rua Litoral', 'Paraíso', '21973140724', '2025-10-15 19:40:41', '26297-318', 'Nova Iguaçu', '380', NULL, NULL),
+(5, 'Riane Bastos', 'rianebastos@gmail.com', '$2y$10$UAmx/jdkj7YinDufrSf0xu99BUEDz4f2kSgqWj2nRz2Ge22o.y.yq', 'Rua Litoral', 'Paraíso', '21993456789', '2025-11-06 17:40:28', '26297-318', 'Nova Iguaçu', '123', -22.8210476, -43.6012684);
 
 -- --------------------------------------------------------
 
@@ -639,7 +613,7 @@ ALTER TABLE `usuarios_excluidos`
 -- AUTO_INCREMENT de tabela `admins`
 --
 ALTER TABLE `admins`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT de tabela `admin_antigo`
@@ -651,37 +625,37 @@ ALTER TABLE `admin_antigo`
 -- AUTO_INCREMENT de tabela `areas_entrega`
 --
 ALTER TABLE `areas_entrega`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT de tabela `categorias`
 --
 ALTER TABLE `categorias`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de tabela `horarios_funcionamento`
 --
 ALTER TABLE `horarios_funcionamento`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=197;
 
 --
 -- AUTO_INCREMENT de tabela `lojas`
 --
 ALTER TABLE `lojas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de tabela `lojas_excluidas`
 --
 ALTER TABLE `lojas_excluidas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de tabela `lojas_favoritas`
 --
 ALTER TABLE `lojas_favoritas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de tabela `lojas_recusadas`
@@ -693,19 +667,19 @@ ALTER TABLE `lojas_recusadas`
 -- AUTO_INCREMENT de tabela `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- AUTO_INCREMENT de tabela `pedido_itens`
 --
 ALTER TABLE `pedido_itens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT de tabela `produtos`
 --
 ALTER TABLE `produtos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de tabela `produto_opcoes`
@@ -723,7 +697,7 @@ ALTER TABLE `super_admins`
 -- AUTO_INCREMENT de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de tabela `usuarios_excluidos`

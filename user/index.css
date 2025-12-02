@@ -1,0 +1,625 @@
+/* ==========================================================================
+   CONSUMER APP - ESTILO GERAL (index.css)
+   ========================================================================== */
+:root {
+    --primary-orange: #ff6f00;
+    --primary-hover: #e65100;
+    --bg-page: #f7f9fa;
+    --bg-white: #ffffff;
+    --text-dark: #2d3436;
+    --text-gray: #636e72;
+    --border-radius: 12px;
+    --shadow-soft: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+body {
+    background-color: var(--bg-page);
+    color: var(--text-dark);
+    padding-bottom: 40px;
+}
+
+a { text-decoration: none; color: inherit; }
+
+/* --- HEADER CONSUMIDOR --- */
+.consumer-header {
+    background: var(--bg-white);
+    padding: 15px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    position: sticky; top: 0; z-index: 100;
+}
+.header-container {
+    max-width: 1200px; margin: 0 auto; padding: 0 20px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+.app-logo { font-size: 1.5rem; font-weight: 800; color: var(--text-dark); }
+.app-logo span { color: var(--primary-orange); }
+
+.user-actions a {
+    font-weight: 600; font-size: 0.9rem; margin-left: 20px; color: var(--text-gray);
+    transition: color 0.3s;
+}
+.user-actions a:hover { color: var(--primary-orange); }
+.btn-login-header {
+    border: 1px solid var(--primary-orange); color: var(--primary-orange) !important;
+    padding: 8px 18px; border-radius: 20px;
+}
+
+/* --- HERO SEARCH (Busca Grande) --- */
+.search-hero {
+    background: linear-gradient(135deg, #fff 0%, #fefefe 100%);
+    padding: 40px 20px; text-align: center;
+    border-bottom: 1px solid #eee; margin-bottom: 30px;
+}
+.search-hero h2 { font-size: 2rem; margin-bottom: 20px; color: var(--text-dark); }
+
+.search-box {
+    background: #fff; border: 1px solid #ddd; border-radius: 50px;
+    padding: 8px; max-width: 700px; margin: 0 auto;
+    display: flex; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+.search-box input, .search-box select {
+    border: none; padding: 12px 15px; font-size: 1rem; outline: none; flex: 1;
+}
+.search-box select { border-left: 1px solid #eee; max-width: 200px; color: var(--text-gray); }
+.search-btn {
+    background: var(--primary-orange); color: #fff; border: none;
+    width: 45px; height: 45px; border-radius: 50%; cursor: pointer;
+    font-size: 1.1rem; transition: transform 0.2s;
+}
+.search-btn:hover { background: var(--primary-hover); transform: scale(1.05); }
+
+/* --- GRID DE LOJAS (CORREÇÃO) --- */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 40px 20px;
+    width: 100%; /* Garante largura total */
+}
+
+.store-grid {
+    display: grid;
+    /* Mágica aqui: auto-fill preenche a linha, minmax(280px) define o tamanho mínimo do card */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    width: 100%;
+}
+
+/* Garante que o card não estoure */
+.store-card {
+    background: var(--bg-white);
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.3s ease;
+    border: 1px solid transparent;
+    display: flex;
+    flex-direction: column; /* Conteúdo interno vertical */
+    height: 100%; /* Para cards terem mesma altura */
+}
+
+/* Se quiser garantir Flexbox como plano B (caso o grid falhe em navegadores antigos) */
+@supports not (display: grid) {
+    .store-grid {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .store-card {
+        width: 300px;
+        margin: 10px;
+    }
+}
+.store-card:hover { transform: translateY(-5px); border-color: #ffebd7; }
+
+.card-banner { height: 100px; background-color: #f0f0f0; } /* Pode ser uma cor ou img de fundo */
+
+.card-content { padding: 15px; position: relative; margin-top: -40px; }
+
+.store-logo {
+    width: 70px; height: 70px; border-radius: 50%; border: 3px solid #fff;
+    object-fit: cover; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.store-info { margin-top: 10px; }
+.store-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 5px; display: block; }
+.store-meta { font-size: 0.85rem; color: var(--text-gray); display: flex; align-items: center; gap: 10px; }
+.meta-dot { width: 4px; height: 4px; background: #ccc; border-radius: 50%; }
+
+.store-footer {
+    padding: 12px 15px; border-top: 1px solid #f5f5f5;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.85rem; font-weight: 600;
+}
+.badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; }
+.badge.open { background: #e6fffa; color: #00b894; }
+.badge.closed { background: #fff5f5; color: #d63031; }
+
+.fav-btn {
+    position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.8);
+    border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer;
+    color: #ccc; font-size: 1.1rem; transition: all 0.2s;
+}
+.fav-btn.active { color: #e74c3c; transform: scale(1.1); }
+
+/* ==========================================================================
+   TELA DE LOGIN E CADASTRO
+   ========================================================================== */
+.auth-wrapper {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle, #fff 0%, #f0f2f5 100%); padding: 20px;
+}
+
+.auth-card {
+    background: #fff; width: 100%; max-width: 500px;
+    padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.auth-header { text-align: center; margin-bottom: 30px; }
+.auth-header h1 { font-size: 1.8rem; color: var(--text-dark); margin-bottom: 5px; }
+.auth-header p { color: var(--text-gray); }
+
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
+.form-group input {
+    width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
+    font-size: 1rem; transition: border-color 0.3s;
+}
+.form-group input:focus { border-color: var(--primary-orange); outline: none; }
+.form-group input[readonly] { background-color: #f9f9f9; color: #777; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+.btn-primary {
+    width: 100%; background: var(--primary-orange); color: #fff;
+    padding: 14px; border: none; border-radius: 8px; font-size: 1rem;
+    font-weight: 700; cursor: pointer; transition: background 0.3s;
+}
+.btn-primary:hover { background: var(--primary-hover); }
+
+.toggle-auth { text-align: center; margin-top: 20px; font-size: 0.9rem; }
+.toggle-auth a { color: var(--primary-orange); font-weight: 600; cursor: pointer; }
+
+/* Feedback do CEP */
+.cep-status { font-size: 0.8rem; font-weight: 600; margin-top: 5px; display: block; }
+.cep-status.success { color: #00b894; }
+.cep-status.error { color: #d63031; }
+
+/* Esconder/Mostrar Forms */
+.auth-section { display: none; animation: fadeIn 0.4s; }
+.auth-section.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ... (Mantenha o CSS anterior) ... */
+
+/* ==========================================================================
+   BOLSINHA FLUTUANTE (Floating Cart)
+   ========================================================================== */
+.floating-cart-bar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--primary-orange);
+    color: #fff;
+    width: 90%;
+    max-width: 600px;
+    padding: 15px 20px;
+    border-radius: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 25px rgba(255, 111, 0, 0.4);
+    z-index: 999;
+    text-decoration: none;
+    transition: transform 0.2s;
+    animation: slideUpCart 0.3s ease-out;
+}
+
+.floating-cart-bar:hover {
+    transform: translateX(-50%) scale(1.02);
+    background-color: var(--primary-hover);
+}
+
+.cart-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.cart-count {
+    background: #fff;
+    color: var(--primary-orange);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 800;
+}
+
+.cart-total {
+    font-size: 1rem;
+}
+
+.cart-link-text {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+@keyframes slideUpCart {
+    from { transform: translate(-50%, 50px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+}
+/* ==========================================================================
+   PÁGINA DE PERFIL DO USUÁRIO (perfil.php)
+   ========================================================================== */
+
+/* 1. Layout Principal (Grid: Sidebar + Conteúdo) */
+.profile-container {
+    display: grid;
+    grid-template-columns: 280px 1fr; /* Coluna da esquerda fixa, direita flexível */
+    gap: 30px;
+    margin-top: 30px;
+    margin-bottom: 50px;
+    align-items: start; /* Alinha o topo */
+}
+
+/* 2. Sidebar (Menu Lateral) */
+.profile-sidebar {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    padding: 25px;
+    position: sticky;
+    top: 90px; /* Fica fixo ao rolar a página */
+}
+
+/* Informações do Usuário no Sidebar */
+.user-brief {
+    text-align: center;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.user-avatar-placeholder {
+    width: 80px;
+    height: 80px;
+    background-color: #fcefe6; /* Laranja bem claro */
+    color: var(--primary-orange);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px auto;
+    font-size: 2.5rem;
+}
+
+.user-brief h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--text-dark);
+}
+
+.user-brief span {
+    font-size: 0.9rem;
+    color: var(--text-gray);
+}
+
+/* Menu de Navegação */
+.profile-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.profile-menu li {
+    margin-bottom: 8px;
+}
+
+.profile-menu a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #555;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.profile-menu a i {
+    width: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+/* Estado Ativo e Hover do Menu */
+.profile-menu a:hover {
+    background-color: #f9f9f9;
+    color: var(--primary-orange);
+    transform: translateX(5px); /* Efeito de mover levemente */
+}
+
+.profile-menu a.active {
+    background-color: #fff0e6; /* Fundo laranja suave */
+    color: var(--primary-orange);
+}
+
+.profile-menu a.logout-link {
+    color: #e74c3c;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 10px;
+    padding-top: 15px;
+}
+.profile-menu a.logout-link:hover {
+    background-color: #fdecea;
+}
+
+/* 3. Área de Conteúdo (Direita) */
+.profile-content {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    padding: 30px;
+    min-height: 400px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f5f5f5;
+}
+
+.section-header h2 {
+    font-size: 1.5rem;
+    color: var(--text-dark);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-header h2 i {
+    color: var(--primary-orange);
+}
+
+/* 4. Lista de Pedidos (Estilo Card) */
+.order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.order-card {
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+    background: #fff;
+}
+
+.order-card:hover {
+    border-color: var(--primary-orange);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    transform: translateY(-2px);
+}
+
+.order-info h4 {
+    margin: 0 0 5px 0;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+}
+
+.order-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-gray);
+}
+
+.order-info .order-date {
+    font-size: 0.8rem;
+    color: #999;
+    margin-top: 5px;
+}
+
+.order-status-price {
+    text-align: right;
+}
+
+.order-price {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #27ae60;
+    margin-bottom: 5px;
+}
+
+/* Badges de Status do Pedido */
+.status-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-pendente { background: #fff3cd; color: #856404; }
+.status-preparando { background: #cce5ff; color: #004085; }
+.status-saiu_para_entrega { background: #d1ecf1; color: #0c5460; }
+.status-entregue { background: #d4edda; color: #155724; }
+.status-cancelado { background: #f8d7da; color: #721c24; }
+
+/* 5. Formulário de Perfil */
+.profile-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Duas colunas */
+    gap: 20px;
+}
+
+.form-full {
+    grid-column: 1 / -1; /* Ocupa largura total */
+}
+
+/* Botão Salvar Perfil */
+.btn-save-profile {
+    background-color: var(--primary-orange);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-save-profile:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+/* Estado Vazio (Sem pedidos) */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-gray);
+}
+.empty-state i {
+    font-size: 3rem;
+    color: #ddd;
+    margin-bottom: 15px;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE (Celular)
+   ========================================================================== */
+@media (max-width: 900px) {
+    .profile-container {
+        grid-template-columns: 1fr; /* Vira uma coluna só */
+        gap: 20px;
+    }
+
+    .profile-sidebar {
+        position: static; /* Remove fixação no mobile */
+        text-align: center;
+    }
+    
+    .profile-menu a {
+        justify-content: center; /* Centraliza links no mobile */
+    }
+
+    /* Ajuste cards de pedido no mobile */
+    .order-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .order-status-price {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px dashed #eee;
+        padding-top: 10px;
+        text-align: left;
+    }
+
+    .profile-form-grid {
+        grid-template-columns: 1fr; /* Form vira uma coluna */
+    }
+}
+/* ==========================================================================
+   ALERTA DE ENTREGA (GIF)
+   ========================================================================== */
+.delivery-toast {
+    position: fixed;
+    top: 90px; /* Logo abaixo do header */
+    right: 20px;
+    background-color: #fff;
+    border-left: 5px solid #2ecc71; /* Verde Sucesso */
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 1100;
+    max-width: 350px;
+    animation: slideInRight 0.5s ease-out;
+}
+
+.delivery-gif {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1px solid #eee;
+}
+
+.delivery-content strong {
+    display: block;
+    color: var(--text-dark);
+    font-size: 1rem;
+    margin-bottom: 3px;
+}
+
+.delivery-content span {
+    font-size: 0.85rem;
+    color: var(--text-gray);
+}
+
+.btn-close-toast {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-left: auto; /* Empurra para a direita */
+    padding: 0 5px;
+}
+
+.btn-close-toast:hover {
+    color: #e74c3c;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* No celular, centraliza */
+@media (max-width: 768px) {
+    .delivery-toast {
+        right: 50%;
+        transform: translateX(50%);
+        width: 90%;
+        top: 80px;
+        animation: slideDownMobile 0.5s ease-out forwards;
+    }
+    @keyframes slideDownMobile {
+        from { transform: translate(50%, -20px); opacity: 0; }
+        to { transform: translate(50%, 0); opacity: 1; }
+    }
+}

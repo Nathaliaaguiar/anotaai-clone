@@ -1,0 +1,183 @@
+/* ==========================================================================
+   ESTILOS DE PERFIL E CLIENTES (cliente.css)
+   ========================================================================== */
+
+:root {
+    --primary-orange: #ff6f00;
+    --primary-hover: #e65100;
+    --text-dark: #2c3e50;
+    --text-gray: #7f8c8d;
+    --bg-white: #ffffff;
+    --border-color: #ecf0f1;
+    --shadow-card: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.admin-crud {
+    max-width: 1400px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.admin-crud h1 {
+    color: var(--text-dark);
+    border-left: 5px solid var(--primary-orange);
+    padding-left: 15px;
+    margin-bottom: 25px;
+    font-size: 1.8rem;
+}
+
+/* --- SEÇÃO DE PERFIL DA LOJA --- */
+.perfil-loja-card {
+    background: var(--bg-white);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 40px;
+}
+
+.perfil-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* 2 partes formulário, 1 parte mapa/info extra */
+    gap: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+}
+
+.form-group input, 
+.form-group select, 
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    border-color: var(--primary-orange);
+    outline: none;
+}
+
+/* Status do CEP */
+#cep-status {
+    font-size: 0.85rem;
+    margin-top: 5px;
+    display: block;
+    font-weight: 600;
+}
+.cep-valid { color: #2ecc71; }
+.cep-invalid { color: #e74c3c; }
+.cep-buscando { color: #3498db; }
+
+/* Botão Salvar Perfil */
+.btn-save-perfil {
+    background-color: var(--primary-orange);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    transition: background 0.3s;
+}
+.btn-save-perfil:hover { background-color: var(--primary-hover); }
+
+
+/* --- SEÇÃO DE LISTAS DE CLIENTES --- */
+.clientes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Duas colunas lado a lado */
+    gap: 30px;
+}
+
+.card-lista {
+    background: var(--bg-white);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+    height: 100%;
+}
+
+.card-lista h2 {
+    font-size: 1.2rem;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-lista h2 i {
+    margin-right: 10px;
+}
+.card-lista h2 i.fa-heart { color: #e74c3c; }   /* Coração vermelho */
+.card-lista h2 i.fa-receipt { color: #27ae60; } /* Recibo verde */
+
+/* Scroll na tabela se for muito grande */
+.table-wrapper {
+    max-height: 400px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+/* Tabela Moderna */
+.tabela-moderna {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabela-moderna th {
+    text-align: left;
+    padding: 12px;
+    background-color: #f8f9fa;
+    color: #666;
+    font-size: 0.85rem;
+    position: sticky;
+    top: 0;
+}
+
+.tabela-moderna td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    color: #444;
+    font-size: 0.95rem;
+}
+
+.tabela-moderna tr:hover {
+    background-color: #fff8e1;
+}
+
+/* Badge de contagem */
+.count-badge {
+    background-color: var(--primary-orange);
+    color: white;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 900px) {
+    .perfil-grid, .clientes-grid {
+        grid-template-columns: 1fr; /* Vira uma coluna só no celular */
+    }
+    
+    .perfil-loja-card {
+        padding: 20px;
+    }
+}

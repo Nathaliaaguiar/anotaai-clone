@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../includes/header.php';
+?>  <link rel="stylesheet" href="carrinho.css">
 
+<?php /* ADICIONE ISSO PARA ABRIR O PHP DE NOVO */
 if (isset($_GET['remover'])) {
     unset($_SESSION['carrinho'][$_GET['remover']]);
     header('Location: carrinho.php');

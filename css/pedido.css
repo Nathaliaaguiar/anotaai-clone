@@ -1,0 +1,205 @@
+/* ==========================================================================
+   ESTILOS DE PEDIDOS (pedido.css)
+   ========================================================================== */
+
+/* Variáveis (Coincidem com header.css para consistência) */
+:root {
+    --primary-orange: #ff6f00;
+    --primary-hover: #e65100;
+    --text-dark: #2c3e50;
+    --text-gray: #7f8c8d;
+    --bg-white: #ffffff;
+    --border-color: #ecf0f1;
+    --shadow-card: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* --- ESTRUTURA GERAL --- */
+.admin-crud {
+    max-width: 1400px;
+    margin: 30px auto;
+    padding: 0 20px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.admin-crud h1 {
+    font-size: 1.8rem;
+    color: var(--text-dark);
+    margin-bottom: 25px;
+    border-left: 5px solid var(--primary-orange);
+    padding-left: 15px;
+}
+
+/* --- TABELAS (Estilo Moderno) --- */
+.table-responsive {
+    overflow-x: auto; /* Permite rolagem horizontal no celular */
+    background: var(--bg-white);
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+}
+
+.tabela-admin {
+    width: 100%;
+    border-collapse: collapse;
+    white-space: nowrap; /* Evita quebra de linha indesejada */
+}
+
+.tabela-admin thead {
+    background-color: var(--text-dark);
+    color: #fff;
+}
+
+.tabela-admin th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.tabela-admin td {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+    color: #555;
+    vertical-align: middle;
+}
+
+.tabela-admin tr:last-child td {
+    border-bottom: none;
+}
+
+
+
+/* --- FORMULÁRIO DE STATUS NA TABELA --- */
+.form-status {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.form-status select {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: #333;
+}
+
+.form-status button {
+    background-color: var(--primary-orange);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.8rem;
+    transition: background 0.3s;
+}
+
+
+
+/* --- BOTÕES DE AÇÃO --- */
+.btn-edit, .btn-voltar {
+    text-decoration: none;
+    display: inline-block;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.btn-edit {
+    background-color: #3498db;
+    color: white;
+}
+.btn-edit:hover { background-color: #2980b9; }
+
+.btn-voltar {
+    background-color: #95a5a6;
+    color: white;
+    margin-bottom: 20px;
+}
+.btn-voltar:hover { background-color: #7f8c8d; }
+
+/* ==========================================================================
+   ESTILOS ESPECÍFICOS: DETALHES DO PEDIDO
+   ========================================================================== */
+.detalhes-pedido-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* Coluna esquerda menor, direita maior */
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.form-wrapper {
+    background: var(--bg-white);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+    height: fit-content; /* Altura se ajusta ao conteúdo */
+}
+
+.form-wrapper h2, .form-wrapper h3 {
+    margin-top: 0;
+    color: var(--text-dark);
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.info-grupo {
+    margin-bottom: 15px;
+}
+
+.info-grupo strong {
+    display: block;
+    color: var(--text-gray);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.info-grupo p {
+    font-size: 1.1rem;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Tabela de Itens (Dentro do Detalhes) */
+.form-wrapper .tabela-admin th {
+    background-color: var(--primary-orange); /* Cabeçalho laranja nos detalhes */
+}
+
+.form-wrapper .tabela-admin td strong {
+    color: var(--text-dark);
+}
+
+.form-wrapper .tabela-admin td small {
+    display: block;
+    margin-top: 4px;
+    color: #888;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE (Mobile)
+   ========================================================================== */
+@media (max-width: 900px) {
+    .detalhes-pedido-grid {
+        grid-template-columns: 1fr; /* Vira uma coluna só */
+    }
+    
+    .form-status {
+        flex-direction: column; /* Select em cima, botão embaixo */
+        align-items: stretch;
+    }
+    
+    .tabela-admin th, .tabela-admin td {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+}

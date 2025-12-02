@@ -1,56 +1,78 @@
-</main> <footer class="site-footer">
-        <div class="container">
-            <div class="footer-content">
+<?php
+// includes/footer.php
 
-                <div class="footer-section sobre">
-                    <h3 class="footer-logo">PlataFood</h3>
-                    <p>Sua plataforma de delivery favorita. Peça o melhor da sua cidade e receba no conforto da sua casa.</p>
-                    <div class="contato">
-                        <span><i class="fas fa-phone"></i> &nbsp; (21) 99999-8888</span>
-                        <span><i class="fas fa-envelope"></i> &nbsp; contato@platafood.com.br</span>
-                    </div>
+// Define a URL base caso ainda não esteja definida (segurança)
+if (!isset($base_url)) {
+    $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") 
+        . "://" . $_SERVER['HTTP_HOST'] . "/anotaai-clone";
+}
+?>
+
+    </main> <link rel="stylesheet" href="<?php echo $base_url; ?>/includes/footer.css?v=2">
+
+    <footer class="site-footer">
+        <div class="footer-grid">
+            
+            <div class="footer-col">
+                <a href="<?php echo $base_url; ?>/user/index.php" class="footer-brand">Plata<span>Food</span></a>
+                <p>
+                    A plataforma de delivery que conecta você aos melhores sabores da cidade. 
+                    Rápido, fácil e delicioso.
+                </p>
+                <div class="social-icons">
+                    <a href="#" class="social-btn"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="social-btn"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#" class="social-btn"><i class="fa-brands fa-whatsapp"></i></a>
                 </div>
-
-                <div class="footer-section links">
-                    <h4>Links Rápidos</h4>
-                    <ul>
-                        <li><a href="index.php">Cardápio</a></li>
-                        <li><a href="carrinho.php">Meu Carrinho</a></li>
-                        <li><a href="perfil.php">Minha Conta</a></li>
-                        <li><a href="#">Política de Privacidade</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-section horarios">
-                    <h4>Horário de Funcionamento</h4>
-                    <?php
-                        // Busca os horários do banco
-                        $stmt_horarios = $pdo->query("SELECT * FROM horarios_funcionamento ORDER BY dia_semana ASC");
-                        $horarios = $stmt_horarios->fetchAll();
-                        $dias_semana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-                    ?>
-                    <ul class="lista-horarios">
-                        <?php foreach ($horarios as $horario): ?>
-                            <li>
-                                <span class="dia"><?php echo $dias_semana[$horario['dia_semana']]; ?></span>
-                                <?php if ($horario['ativo']): ?>
-                                    <span class="hora"><?php echo date('H:i', strtotime($horario['horario_abertura'])) . ' - ' . date('H:i', strtotime($horario['horario_fechamento'])); ?></span>
-                                <?php else: ?>
-                                    <span class="hora fechado">Fechado</span>
-                                <?php endif; ?>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-
             </div>
+
+            <div class="footer-col">
+                <h3>Navegação</h3>
+                <ul class="footer-links">
+                    <li><a href="<?php echo $base_url; ?>/user/index.php"><i class="fa-solid fa-angle-right"></i> Início</a></li>
+                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Restaurantes</a></li>
+                    
+                    <?php if (isset($_SESSION['usuario_id'])): ?>
+                        <li><a href="<?php echo $base_url; ?>/user/perfil.php"><i class="fa-solid fa-angle-right"></i> Minha Conta</a></li>
+                    <?php else: ?>
+                        <li><a href="<?php echo $base_url; ?>/user/login.php"><i class="fa-solid fa-angle-right"></i> Entrar / Cadastrar</a></li>
+                    <?php endif; ?>
+                    
+                    <li><a href="<?php echo $base_url; ?>/index.php" target="_blank"><i class="fa-solid fa-store"></i> Sou Parceiro</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h3>Fale Conosco</h3>
+                <ul class="footer-links">
+                    <li><a href="#"><i class="fa-solid fa-envelope"></i> contato@platafood.com</a></li>
+                    <li><a href="#"><i class="fa-solid fa-phone"></i> (11) 99999-9999</a></li>
+                    <li><a href="#"><i class="fa-solid fa-location-dot"></i> São Paulo, Brasil</a></li>
+                </ul>
+            </div>
+
         </div>
+
         <div class="footer-bottom">
-            &copy; <?php echo date('Y'); ?> PlataFood | Todos os direitos reservados.
+            <p>&copy; <?php echo date('Y'); ?> <strong>PlataFood</strong>. Todos os direitos reservados.</p>
         </div>
     </footer>
 
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <script src="/anotaai-clone/js/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Fecha toasts de sucesso/erro após 4 segundos
+            const alerts = document.querySelectorAll('.success, .error, .alert');
+            if(alerts.length > 0) {
+                setTimeout(() => {
+                    alerts.forEach(el => {
+                        el.style.transition = 'opacity 0.5s';
+                        el.style.opacity = '0';
+                        setTimeout(() => el.remove(), 500);
+                    });
+                }, 4000);
+            }
+        });
+    </script>
+
 </body>
 </html>

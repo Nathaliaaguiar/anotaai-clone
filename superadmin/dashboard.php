@@ -325,10 +325,153 @@ function toggleExtraInfo(id) {
     row.style.display = (row.style.display === "table-row" || row.style.display === "block") ? "none" : "table-row";
 }
 </script>
-<footer class="platafood-footer">
-  <div class="footer-container">
-    <p>© 2025 PlataFood </p>
-  </div>
+<style>
+    /* 1. Ajuste necessário no BODY para o footer não esconder o conteúdo */
+    body {
+        /* Adiciona um espaço no final da página igual à altura do footer */
+        padding-bottom: 60px; 
+    }
+
+    /* 2. Estilos do Footer Fixo */
+    .super-admin-footer {
+        background-color: #1a1d24;       /* Fundo Dark */
+        border-top: 3px solid #ff6f00;   /* Linha Laranja */
+        color: #b2bec3;                  /* Texto Cinza */
+        padding: 10px 0;                 /* Altura compacta */
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 0.85rem;
+        
+        /* --- A MÁGICA DA FIXAÇÃO --- */
+        position: fixed;  /* Fixa na tela */
+        bottom: 0;        /* Cola no fundo */
+        left: 0;          /* Cola na esquerda */
+        width: 100%;      /* Ocupa toda a largura */
+        z-index: 9999;    /* Garante que fique por cima de tudo */
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.2); /* Sombra suave para cima */
+    }
+
+    .sa-footer-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 100%;
+    }
+
+    .sa-footer-left strong {
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .sa-footer-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .sa-footer-link {
+        color: #b2bec3;
+        text-decoration: none;
+        transition: color 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .sa-footer-link:hover {
+        color: #ff6f00;
+    }
+
+    .sa-version {
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        color: #fff;
+    }
+
+    .sa-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        color: #2ecc71;
+    }
+    .sa-status-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #2ecc71;
+        border-radius: 50%;
+        box-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+        70% { box-shadow: 0 0 0 4px rgba(46, 204, 113, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+    }
+
+    /* Responsivo */
+    @media (max-width: 768px) {
+        body { padding-bottom: 80px; } /* Mais espaço no mobile */
+        .sa-footer-container {
+            flex-direction: column;
+            gap: 5px;
+            text-align: center;
+            padding: 10px;
+        }
+        .super-admin-footer { position: fixed; } /* Mantém fixo no mobile tbm */
+    }
+</style>
+
+<footer class="super-admin-footer">
+    <div class="sa-footer-container">
+        
+        <div class="sa-footer-left">
+            &copy; <?php echo date('Y'); ?> <strong>PlataFood</strong> Admin.
+        </div>
+
+        <div class="sa-footer-right">
+            <a href="../index.php" target="_blank" class="sa-footer-link" title="Ver Loja">
+                <i class="fa-solid fa-store"></i> Ver Loja
+            </a>
+
+            <div class="sa-status">
+                <span class="sa-status-dot"></span> Online
+            </div>
+
+            <span class="sa-version">v2.1</span>
+        </div>
+
+    </div>
 </footer>
+<script>
+// ... (seus scripts de modal existentes ficam aqui) ...
+
+// SCRIPT PARA REMOVER MENSAGEM AUTOMATICAMENTE
+document.addEventListener("DOMContentLoaded", function() {
+    const alerts = document.querySelectorAll('.success, .error');
+    
+    if (alerts.length > 0) {
+        alerts.forEach(function(alert) {
+            // Espera 3 segundos (3000ms) e então começa a sumir
+            setTimeout(function() {
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-20px)'; // Sobe um pouquinho ao sumir
+                
+                // Remove do HTML totalmente após a animação de sumir terminar (0.5s)
+                setTimeout(function() {
+                    alert.remove();
+                }, 500);
+            }, 3000);
+        });
+    }
+});
+</script>
+</body>
+</html>
 </body>
 </html>

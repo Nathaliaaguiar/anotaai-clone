@@ -1,0 +1,304 @@
+/* ==========================================================================
+   PAINEL ADMIN - FOLHA DE ESTILO MESTRE (Header + Dashboard)
+   ========================================================================== */
+
+/* 1. VARIÁVEIS E RESET GLOBAL */
+:root {
+    --header-bg: #1a1d24;
+    --bg-page: #f4f6f9;     /* Fundo cinza claro profissional */
+    --card-bg: #ffffff;
+    --orange-primary: #ff6f00;
+    --orange-hover: #e65100;
+    --text-dark: #2c3e50;
+    --text-gray: #7f8c8d;
+    --text-white: #f5f6fa;
+    --shadow-soft: 0 4px 6px rgba(0,0,0,0.05);
+    --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body.admin-page {
+    font-family: var(--font-main);
+    background-color: var(--bg-page);
+    color: var(--text-dark);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+a { text-decoration: none; }
+ul { list-style: none; }
+
+/* Container centralizado padrão */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* ==========================================================================
+   2. HEADER (Topo Fixo e Escuro)
+   ========================================================================== */
+header.admin-header {
+    background-color: var(--header-bg);
+    height: 70px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+}
+
+/* Logo */
+header.admin-header .logo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-white);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+header.admin-header .logo i { color: var(--orange-primary); font-size: 1.2rem; }
+
+/* Menu de Navegação */
+header.admin-header nav ul {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+header.admin-header nav a {
+    color: #b2bec3;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Efeito Hover e Ativo */
+header.admin-header nav a:hover,
+header.admin-header nav a.active {
+    color: var(--text-white);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+header.admin-header nav a.active i {
+    color: var(--orange-primary);
+}
+
+/* Botão Sair (Destaque Vermelho Suave) */
+header.admin-header nav a.btn-sair {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    margin-left: 20px;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+header.admin-header nav a.btn-sair:hover {
+    background-color: #e74c3c;
+    color: #fff;
+}
+
+/* ==========================================================================
+   3. DASHBOARD (Cards, Gráficos e Formulários)
+   ========================================================================== */
+.admin-main {
+    padding-bottom: 50px;
+}
+
+h2 {
+    color: var(--text-dark);
+    margin-bottom: 25px;
+    border-left: 5px solid var(--orange-primary);
+    padding-left: 15px;
+    font-size: 1.5rem;
+}
+
+/* --- CARDS DE ESTATÍSTICAS (Topo) --- */
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-bottom: 3px solid transparent;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    border-bottom-color: var(--orange-primary);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: rgba(255, 111, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: var(--orange-primary);
+}
+
+.stat-info h3 {
+    font-size: 0.85rem;
+    color: var(--text-gray);
+    text-transform: uppercase;
+    margin: 0 0 5px 0;
+    font-weight: 600;
+}
+
+.stat-info p {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+/* --- GRÁFICOS --- */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dois lado a lado */
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.chart-container {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-soft);
+    height: 350px;
+}
+
+.chart-container h3 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    color: #444;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* --- CONFIGURAÇÕES DA LOJA (Formulários) --- */
+.config-section {
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-soft);
+}
+
+.config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+}
+
+.form-group input[type="text"],
+.form-group input[type="file"],
+.form-group input[type="time"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    border-color: var(--orange-primary);
+    outline: none;
+}
+
+.btn-primary {
+    background-color: var(--orange-primary);
+    color: #fff;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background-color: var(--orange-hover);
+}
+
+/* ==========================================================================
+   4. NOTIFICAÇÕES (TOAST FLUTUANTE)
+   ========================================================================== */
+.success, .error {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  padding: 15px 25px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+  z-index: 9999;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  min-width: 300px;
+  text-align: center;
+  animation: slideIn 0.5s ease forwards;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.success {
+  background: linear-gradient(135deg, #1e8e3e, #2ecc71);
+  border-left: 5px solid #145e28;
+}
+
+.error {
+  background: linear-gradient(135deg, #d93025, #e74c3c);
+  border-left: 5px solid #a51b12;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}

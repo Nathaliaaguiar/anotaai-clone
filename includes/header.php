@@ -2,75 +2,84 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+// Conecta ao banco
 require_once __DIR__ . '/../config/db.php';
 
-// URL base do projeto
+// URL base
 $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") 
     . "://" . $_SERVER['HTTP_HOST'] . "/anotaai-clone";
 
-// 🔹 Detectar loja visitada (sessão ou URL)
-$loja_id_visitada = $_GET['loja_id'] ?? ($_SESSION['loja_id_visitada'] ?? 0);
-
-// 🔹 Se a pessoa entrou em uma loja (tem loja_id na URL)
-if (!empty($_GET['loja_id'])) {
-    $_SESSION['loja_id_visitada'] = (int) $_GET['loja_id'];
+// 1. Detectar loja visitada
+$loja_id_visitada = 0;
+if (isset($_GET['loja_id']) && !empty($_GET['loja_id'])) {
+    $loja_id_visitada = (int) $_GET['loja_id'];
+    $_SESSION['loja_id_visitada'] = $loja_id_visitada;
+} elseif (isset($_SESSION['loja_id_visitada'])) {
     $loja_id_visitada = $_SESSION['loja_id_visitada'];
 }
 
-// 🔹 Se o usuário acessou o index (sem loja_id na URL), limpar a sessão
 $current_page = basename($_SERVER['PHP_SELF']);
 if ($current_page === 'index.php' && empty($_GET['loja_id'])) {
     unset($_SESSION['loja_id_visitada']);
     $loja_id_visitada = 0;
 }
 
-// 🔹 Padrão inicial (modo PlataFood)
+// 2. Definição da Logo e Nome
 $nome_da_loja = "PlataFood";
-$url_logo_para_img = $base_url . "/img/logoplatafood.png"; // logo padrão
+$url_logo_para_img = "https://placehold.co/100x100/ff6f00/ffffff?text=PF"; 
 $status_loja = ['status' => '', 'texto' => ''];
 
-// 🔹 Se estiver em loja, trocar nome/logo/status
 if ($loja_id_visitada > 0) {
-    $stmt_nome_loja = $pdo->prepare("SELECT nome FROM lojas WHERE id = ?");
-    $stmt_nome_loja->execute([$loja_id_visitada]);
-    $nome_loja_db = $stmt_nome_loja->fetchColumn();
+    $stmt = $pdo->prepare("SELECT nome FROM lojas WHERE id = ?");
+    $stmt->execute([$loja_id_visitada]);
+    $loja_atual = $stmt->fetch();
 
-    if ($nome_loja_db) {
-        $nome_da_loja = $nome_loja_db;
-
-        // Verifica se a loja tem logo própria
-        $logo_loja_path = __DIR__ . '/../img/logo_loja_' . $loja_id_visitada . '.png';
-        if (file_exists($logo_loja_path)) {
-            $url_logo_para_img = $base_url . '/img/logo_loja_' . $loja_id_visitada . '.png?v=' . time();
+    if ($loja_atual) {
+        $nome_da_loja = htmlspecialchars($loja_atual['nome']);
+        $caminho_fisico_logo = __DIR__ . '/../img/logo_loja_' . $loja_id_visitada . '.png';
+        
+        if (file_exists($caminho_fisico_logo)) {
+            $url_logo_para_img = '../img/logo_loja_' . $loja_id_visitada . '.png?v=' . time();
         }
 
-        // Verifica status (aberta/fechada)
-        function get_status_loja($pdo, $loja_id) {
-            date_default_timezone_set('America/Sao_Paulo');
-            $dia_semana_atual = date('w');
-            $hora_atual = date('H:i:s');
-
-            $stmt = $pdo->prepare("SELECT * FROM horarios_funcionamento WHERE dia_semana = ? AND loja_id = ?");
-            $stmt->execute([$dia_semana_atual, $loja_id]);
-            $horario_hoje = $stmt->fetch();
-
-            if ($horario_hoje && $horario_hoje['ativo'] && 
-                ($hora_atual >= $horario_hoje['horario_abertura'] && $hora_atual <= $horario_hoje['horario_fechamento'])) {
-                return ['status' => 'aberto', 'texto' => 'ABERTA'];
+        if (!function_exists('get_status_loja')) {
+            function get_status_loja($pdo, $loja_id) {
+                date_default_timezone_set('America/Sao_Paulo');
+                $dia = date('w');
+                $hora = date('H:i:s');
+                $stmt = $pdo->prepare("SELECT * FROM horarios_funcionamento WHERE dia_semana = ? AND loja_id = ?");
+                $stmt->execute([$dia, $loja_id]);
+                $h = $stmt->fetch();
+                if ($h && $h['ativo'] && $hora >= $h['horario_abertura'] && $hora <= $h['horario_fechamento']) {
+                    return ['status' => 'aberto', 'texto' => 'ABERTA'];
+                }
+                return ['status' => 'fechado', 'texto' => 'FECHADA'];
             }
-            return ['status' => 'fechado', 'texto' => 'FECHADA'];
         }
-
         $status_loja = get_status_loja($pdo, $loja_id_visitada);
     }
 }
 
-// 🔹 Carrinho
-$total_itens_carrinho = count($_SESSION['carrinho'] ?? []);
+// 3. Contagem do Carrinho
+$total_itens_carrinho = 0;
+if (isset($_SESSION['carrinho'])) {
+    foreach ($_SESSION['carrinho'] as $item) {
+        $total_itens_carrinho += $item['quantidade'];
+    }
+}
 
-// 🔹 Função para menu ativo
-function is_active($page_name) {
-    return basename($_SERVER['PHP_SELF']) == $page_name ? 'active' : '';
+// --- NOVO: VERIFICAÇÃO DE ENTREGA EM ANDAMENTO ---
+$pedido_saiu_entrega = false;
+if (isset($_SESSION['usuario_id'])) {
+    $stmt_entrega = $pdo->prepare("SELECT id FROM pedidos WHERE usuario_id = ? AND status = 'saiu_para_entrega' LIMIT 1");
+    $stmt_entrega->execute([$_SESSION['usuario_id']]);
+    if ($stmt_entrega->fetch()) {
+        $pedido_saiu_entrega = true;
+    }
+}
+
+if (!function_exists('is_active')) {
+    function is_active($page) { return basename($_SERVER['PHP_SELF']) == $page ? 'active' : ''; }
 }
 ?>
 <!DOCTYPE html>
@@ -78,78 +87,79 @@ function is_active($page_name) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($nome_da_loja); ?> - Delivery</title>
-    <link rel="stylesheet" href="<?php echo $base_url; ?>/css/style.css">
+    <title><?php echo $nome_da_loja; ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="<?php echo $base_url; ?>/includes/header.css?v=3">
+    <?php if(file_exists('css/index.css')): ?>
+        <link rel="stylesheet" href="css/index.css?v=4">
+    <?php endif; ?>
 </head>
 <body>
-    <div id="toast-notificacao" class="toast-notificacao">
-        <div class="toast-conteudo">
-            <img src="../img/delivery.gif" alt="Ícone de entrega" class="toast-icone">
-            <div class="toast-texto">
-                <strong>Seu pedido saiu para entrega!</strong>
-                <span>O entregador já está a caminho.</span>
-            </div>
+
+<?php if ($pedido_saiu_entrega): ?>
+    <div id="deliveryToast" class="delivery-toast">
+        <img src="../img/delivery.gif" alt="Moto" class="delivery-gif">
+        <div class="delivery-content">
+            <strong>Oba! Saiu para entrega 🛵</strong>
+            <span>Seu pedido está chegando.</span>
         </div>
-        <button id="toast-fechar" class="toast-fechar">&times;</button>
+        <button class="btn-close-toast" onclick="document.getElementById('deliveryToast').style.display='none'">&times;</button>
     </div>
-    <header>
-        </header>
-<body class="user-page">
+<?php endif; ?>
 
-    <!-- Carrinho flutuante -->
-    <a href="<?php echo $base_url; ?>/user/carrinho.php" id="floating-cart" class="floating-cart">
-        <i class="fas fa-shopping-bag"></i>
-        <span id="cart-counter" class="cart-counter"><?php echo $total_itens_carrinho; ?></span>
-        <div id="add-to-cart-animation" class="add-to-cart-animation">🎉 +1</div>
-    </a>
+<header class="user-header">
+    <div class="header-container">
+        
+        <a href="index.php" class="header-logo">
+            <img src="<?php echo $url_logo_para_img; ?>" alt="Logo">
+            <?php if($loja_id_visitada == 0): ?>
+                <span>Plata<em>Food</em></span>
+            <?php else: ?>
+                <span><?php echo $nome_da_loja; ?></span>
+            <?php endif; ?>
+        </a>
 
-    <!-- Cabeçalho -->
-    <header class="site-header">
-        <div class="container header-container">
-            <a href="<?php echo $base_url; ?>/user/index.php" class="logo">
-                <img src="<?php echo $url_logo_para_img; ?>" 
-                     alt="Logo <?php echo htmlspecialchars($nome_da_loja); ?>" 
-                     class="store-logo-img">
-                <span class="store-name"><?php echo htmlspecialchars($nome_da_loja); ?></span>
-            </a>
+        <?php if ($loja_id_visitada > 0 && !empty($status_loja['texto'])): ?>
+            <div style="margin-left: 15px; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; 
+                background-color: <?php echo $status_loja['status'] == 'aberto' ? '#d4edda' : '#f8d7da'; ?>; 
+                color: <?php echo $status_loja['status'] == 'aberto' ? '#155724' : '#721c24'; ?>;">
+                <?php echo $status_loja['texto']; ?>
+            </div>
+        <?php endif; ?>
+
+        <button class="mobile-toggle" onclick="toggleMenu()">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <ul class="nav-menu" id="navMenu">
+            <li><a href="index.php" class="nav-link <?php echo is_active('index.php'); ?>"><i class="fa-solid fa-house"></i> Início</a></li>
 
             <?php if ($loja_id_visitada > 0): ?>
-                <div class="status-loja status-<?php echo $status_loja['status']; ?>">
-                    <span><?php echo $status_loja['texto']; ?></span>
-                </div>
-            <?php else: ?>
-                
+                <li><a href="loja_menu.php?loja_id=<?php echo $loja_id_visitada; ?>" class="nav-link <?php echo is_active('loja_menu.php'); ?>"><i class="fa-solid fa-utensils"></i> Cardápio</a></li>
+                <li>
+                    <a href="carrinho.php" class="nav-link cart-link <?php echo is_active('carrinho.php'); ?>">
+                        <i class="fa-solid fa-bag-shopping"></i> Sacola
+                        <?php if($total_itens_carrinho > 0): ?>
+                            <span class="cart-badge"><?php echo $total_itens_carrinho; ?></span>
+                        <?php endif; ?>
+                    </a>
+                </li>
             <?php endif; ?>
 
-            <nav id="nav-menu">
-                <button id="hamburger-btn">
-                    <span class="bar"></span><span class="bar"></span><span class="bar"></span>
-                </button>
-                <ul id="nav-links">
-                    <?php if ($loja_id_visitada > 0): ?>
-                        <li><a href="<?php echo $base_url; ?>/user/index.php?loja_id=<?php echo $loja_id_visitada; ?>" 
-                               class="<?php echo is_active('index.php'); ?>">Cardápio</a></li>
-                        <li><a href="<?php echo $base_url; ?>/user/carrinho.php" 
-                               class="<?php echo is_active('carrinho.php'); ?>">Carrinho (<?php echo $total_itens_carrinho; ?>)</a></li>
-                    <?php endif; ?>
+            <?php if (isset($_SESSION['usuario_id'])): ?>
+                <li><a href="perfil.php" class="nav-link <?php echo is_active('perfil.php'); ?>"><i class="fa-solid fa-user"></i> Minha Conta</a></li>
+                <li><a href="logout.php" class="nav-link btn-sair"><i class="fa-solid fa-right-from-bracket"></i></a></li>
+            <?php else: ?>
+                <li><a href="login.php" class="nav-link btn-login">Entrar</a></li>
+            <?php endif; ?>
+        </ul>
+    </div>
+</header>
 
-                    <?php if (isset($_SESSION['usuario_id'])): ?>
-                      <ul class="menu-links">
-  <li><a href="<?php echo $base_url; ?>/index.php" 
-         class="nav-button <?php echo is_active('index.php'); ?>">🏠 Início</a></li>
-  <li><a href="<?php echo $base_url; ?>/user/perfil.php" 
-         class="nav-button <?php echo is_active('perfil.php'); ?>">Meu Perfil</a></li>
-  <li><a href="<?php echo $base_url; ?>/user/logout.php" 
-         class="nav-button sair-btn">Sair</a></li>
-</ul>
-                    <?php else: ?>
-                        <li><a href="<?php echo $base_url; ?>/user/login.php" 
-                               class="nav-button <?php echo is_active('login.php'); ?>">Entrar / Cadastrar</a></li>
-                    <?php endif; ?>
-                </ul>
-            </nav>
-        </div>
-    </header>
+<script>
+    function toggleMenu() {
+        document.getElementById('navMenu').classList.toggle('active');
+    }
+</script>
 
-    <main class="container">
+<main style="min-height: 80vh;">

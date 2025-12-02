@@ -1,20 +1,17 @@
 <?php
-require_once 'includes/header.php';
 require_once 'includes/auth_check.php';
-// ADICIONADO: A "chave mestra"
+require_once 'includes/header.php'; // Header já carrega header.css
 $loja_id = $_SESSION['admin_loja_id'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pedido_id'])) {
     $pedido_id = $_POST['pedido_id'];
     $status = $_POST['status'];
-    // MODIFICADO: Garante que só atualize status de pedidos da própria loja
     $stmt = $pdo->prepare("UPDATE pedidos SET status = ? WHERE id = ? AND loja_id = ?");
     $stmt->execute([$status, $pedido_id, $loja_id]);
     header("Location: pedidos.php");
     exit;
 }
 
-// MODIFICADO: Lista apenas os pedidos da loja logada
 $stmt = $pdo->prepare("
     SELECT p.*, u.nome as cliente_nome 
     FROM pedidos p 
@@ -27,34 +24,50 @@ $pedidos = $stmt->fetchAll();
 
 $status_options = ['pendente', 'preparando', 'saiu_para_entrega', 'entregue', 'cancelado', 'aguardando_pagamento'];
 ?>
+
+<link rel="stylesheet" href="../css/pedido.css?v=1">
+
 <section class="admin-crud">
     <h1>Gerenciar Pedidos</h1>
-    <table class="tabela-admin">
-        <thead><tr><th>ID</th><th>Cliente</th><th>Total</th><th>Data</th><th>Status</th><th>Ações</th></tr></thead>
-        <tbody>
-            <?php foreach ($pedidos as $pedido): ?>
+
+    <div class="table-responsive">
+        <table class="tabela-admin">
+            <thead>
                 <tr>
-                    <td>#<?php echo $pedido['id']; ?></td>
-                    <td><?php echo htmlspecialchars($pedido['cliente_nome']); ?></td>
-                    <td>R$ <?php echo number_format($pedido['total'], 2, ',', '.'); ?></td>
-                    <td><?php echo date('d/m/Y H:i', strtotime($pedido['data'])); ?></td>
-                    <td>
-                        <form action="pedidos.php" method="POST" class="form-status">
-                            <input type="hidden" name="pedido_id" value="<?php echo $pedido['id']; ?>">
-                            <select name="status">
-                                <?php foreach ($status_options as $status): ?>
-                                    <option value="<?php echo $status; ?>" <?php if ($pedido['status'] == $status) echo 'selected'; ?>>
-                                        <?php echo ucwords(str_replace('_', ' ', $status)); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <button type="submit">OK</button>
-                        </form>
-                    </td>
-                    <td><a href="pedido_detalhes.php?id=<?php echo $pedido['id']; ?>" class="btn-edit">Ver Detalhes</a></td>
+                    <th>#ID</th>
+                    <th>Cliente</th>
+                    <th>Total</th>
+                    <th>Data</th>
+                    <th>Status</th>
+                    <th>Ação</th>
                 </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <?php foreach ($pedidos as $pedido): ?>
+                    <tr>
+                        <td>#<?php echo $pedido['id']; ?></td>
+                        <td><?php echo htmlspecialchars($pedido['cliente_nome']); ?></td>
+                        <td style="font-weight: bold; color: #27ae60;">R$ <?php echo number_format($pedido['total'], 2, ',', '.'); ?></td>
+                        <td><?php echo date('d/m/Y H:i', strtotime($pedido['data'])); ?></td>
+                        <td>
+                            <form action="pedidos.php" method="POST" class="form-status">
+                                <input type="hidden" name="pedido_id" value="<?php echo $pedido['id']; ?>">
+                                <select name="status">
+                                    <?php foreach ($status_options as $status): ?>
+                                        <option value="<?php echo $status; ?>" <?php if ($pedido['status'] == $status) echo 'selected'; ?>>
+                                            <?php echo ucwords(str_replace('_', ' ', $status)); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <button type="submit"><i class="fa-solid fa-check"></i></button>
+                            </form>
+                        </td>
+                        <td><a href="pedido_detalhes.php?id=<?php echo $pedido['id']; ?>" class="btn-edit"><i class="fa-solid fa-eye"></i> Detalhes</a></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 </section>
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

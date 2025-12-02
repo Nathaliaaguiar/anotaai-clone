@@ -1,0 +1,205 @@
+/* ==========================================================================
+   LOGIN E CADASTRO DE PARCEIROS (index.css)
+   ========================================================================== */
+
+:root {
+    --primary-orange: #ff6f00;
+    --primary-hover: #e65100;
+    --bg-dark: #1a1d24;      /* Fundo escuro igual ao header do admin */
+    --text-dark: #2c3e50;
+    --text-gray: #7f8c8d;
+    --white: #ffffff;
+    --error-red: #e74c3c;
+    --success-green: #2ecc71;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-dark);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    background-image: radial-gradient(circle at 50% 50%, #2c303a 0%, #1a1d24 100%);
+}
+
+/* --- CARD PRINCIPAL --- */
+.auth-container {
+    background-color: var(--white);
+    width: 100%;
+    max-width: 480px; /* Largura ideal para formulários */
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.6s ease-out;
+}
+
+/* Animação de entrada */
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* --- CABEÇALHO (LOGO) --- */
+.auth-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+.logo span {
+    color: var(--primary-orange);
+}
+
+.auth-subtitle {
+    color: var(--text-gray);
+    font-size: 0.95rem;
+}
+
+/* --- MENSAGENS DE ERRO/SUCESSO --- */
+.alert {
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+.alert-error {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: var(--error-red);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.alert-success {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: var(--success-green);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+/* --- FORMULÁRIOS --- */
+.form-section {
+    display: none; /* Escondido por padrão, JS ativa */
+}
+.form-section.active {
+    display: block;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+}
+
+.form-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s;
+    background-color: #f9f9f9;
+}
+
+.form-group input:focus {
+    border-color: var(--primary-orange);
+    background-color: #fff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 111, 0, 0.1);
+}
+
+/* Ícones dentro dos inputs (Opcional, se usar FontAwesome no HTML) */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+/* --- BOTÕES --- */
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--primary-orange);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    text-transform: uppercase;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+.btn-primary:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* --- LINKS DE ALTERNÂNCIA (Login <-> Cadastro) --- */
+.toggle-link {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 0.9rem;
+    color: var(--text-gray);
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.toggle-link a {
+    color: var(--primary-orange);
+    text-decoration: none;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.toggle-link a:hover {
+    text-decoration: underline;
+}
+
+/* Loading de CEP */
+#cep-feedback {
+    font-size: 0.8rem;
+    margin-top: 5px;
+    display: block;
+    font-weight: 600;
+}
+.loading { color: #3498db; }
+.valid { color: #2ecc71; }
+.invalid { color: #e74c3c; }

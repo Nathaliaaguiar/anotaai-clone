@@ -1,0 +1,73 @@
+/* ==========================================================================
+   ESTILOS DO RODAPÉ (footer.css)
+   ========================================================================== */
+
+:root {
+    --footer-bg: #1a1d24;      /* Mesmo fundo do Header */
+    --footer-border: #2c303a;  /* Borda sutil para separar */
+    --text-gray: #7f8c8d;
+    --text-white: #f5f6fa;
+    --orange-primary: #ff6f00;
+}
+
+/* Estrutura do Rodapé */
+.admin-footer {
+    background-color: var(--footer-bg);
+    border-top: 1px solid var(--footer-border);
+    padding: 25px 0;
+    margin-top: auto; /* Empurra o footer para baixo se a página for curta */
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between; /* Espalha: Esq - Centro - Dir */
+    align-items: center;
+}
+
+/* Lado Esquerdo (Copyright) */
+.footer-left strong {
+    color: var(--text-white);
+    font-weight: 600;
+}
+
+/* Centro (Links) */
+.footer-links {
+    display: flex;
+    gap: 20px;
+}
+
+.footer-links a {
+    color: var(--text-gray);
+    text-decoration: none;
+    transition: color 0.3s ease;
+    font-weight: 500;
+}
+
+.footer-links a:hover {
+    color: var(--orange-primary); /* Fica laranja ao passar o mouse */
+}
+
+/* Lado Direito (Versão e Ícone) */
+.footer-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.footer-right i {
+    color: var(--orange-primary);
+}
+
+/* RESPONSIVIDADE (Celular) */
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column; /* Um embaixo do outro */
+        gap: 15px;
+        text-align: center;
+    }
+}

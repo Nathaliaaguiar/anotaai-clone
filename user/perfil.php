@@ -1,314 +1,263 @@
 <?php
+// perfil.php
 require_once __DIR__ . '/../includes/header.php';
 
+// Verifica se está logado
 if (!isset($_SESSION['usuario_id'])) {
-    header('Location: login.php');
+    echo "<script>window.location.href='login.php';</script>";
     exit;
 }
+
 $usuario_id = $_SESSION['usuario_id'];
+$mensagem = '';
+$erro = '';
 
-// Função para validar CEP via API
-function validarCEP($cep) {
-    $cep = preg_replace('/[^0-9]/', '', $cep);
-    
-    if (strlen($cep) !== 8) {
-        return false;
-    }
-    
-    try {
-        $url = "https://viacep.com.br/ws/{$cep}/json/";
-        $response = file_get_contents($url);
-        $data = json_decode($response, true);
-        
-        return !isset($data['erro']) && !empty($data['cep']);
-    } catch (Exception $e) {
-        error_log("Erro ao validar CEP: " . $e->getMessage());
-        return false;
-    }
-}
-
-// Atualizar perfil (com CEP, número, cidade, bairro e endereço)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nome = $_POST['nome'];
-    $email = $_POST['email'];
-    $telefone = $_POST['telefone'];
-    $cep = $_POST['cep'];
-    $endereco = $_POST['endereco'];
-    $numero = $_POST['numero'];
+// --- ATUALIZAR DADOS (POST) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['atualizar_perfil'])) {
+    $nome = trim($_POST['nome']);
+    $email = trim($_POST['email']);
+    $telefone = trim($_POST['telefone']);
+    $cep = trim($_POST['cep']);
+    $rua = trim($_POST['rua']);     // Apenas a rua
+    $numero = trim($_POST['numero']); // Número separado
     $bairro = trim($_POST['bairro']);
-    $cidade = $_POST['cidade'];
+    $cidade = trim($_POST['cidade']);
 
-    // Validar CEP antes de atualizar
-    $cep_valido = validarCEP($cep);
-    if (!$cep_valido) {
-        $erro_update = "CEP inválido ou inexistente. Por favor, verifique o CEP informado.";
-    } else {
-        $stmt = $pdo->prepare("UPDATE usuarios 
-            SET nome = ?, email = ?, telefone = ?, cep = ?, endereco = ?, numero = ?, bairro = ?, cidade = ? 
-            WHERE id = ?");
-        if ($stmt->execute([$nome, $email, $telefone, $cep, $endereco, $numero, $bairro, $cidade, $usuario_id])) {
-            $sucesso_update = "Perfil atualizado com sucesso!";
-        } else {
-            $erro_update = "Erro ao atualizar perfil. Tente novamente.";
+    // Monta o endereço completo se não tiver coluna 'numero' no banco, 
+    // ou salva separado se tiver. Aqui vou assumir que você quer salvar separado 
+    // ou juntar no 'endereco' se preferir. 
+    // LÓGICA: Salvar 'Rua, Numero' no campo endereco para compatibilidade.
+    $endereco_completo = $rua;
+    if(!empty($numero)) {
+        // Se a rua já não terminar com o número, adiciona
+        if(strpos($rua, $numero) === false) {
+             $endereco_completo = $rua . ', ' . $numero;
         }
     }
+
+    try {
+        // Tenta atualizar. Se der erro de coluna 'numero' inexistente, ajustamos o SQL.
+        // SQL Padrão (compatível com a tabela usuarios simples)
+        $sql = "UPDATE usuarios SET nome=?, email=?, telefone=?, cep=?, endereco=?, bairro=?, cidade=? WHERE id=?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$nome, $email, $telefone, $cep, $endereco_completo, $bairro, $cidade, $usuario_id]);
+        
+        $mensagem = "Dados atualizados com sucesso!";
+        // Atualiza nome na sessão
+        $_SESSION['usuario_nome'] = $nome;
+        
+    } catch (PDOException $e) {
+        $erro = "Erro ao atualizar: " . $e->getMessage();
+    }
 }
 
-// Buscar dados do usuário
-$stmt_usuario = $pdo->prepare("SELECT * FROM usuarios WHERE id = ?");
-$stmt_usuario->execute([$usuario_id]);
-$usuario = $stmt_usuario->fetch();
+// --- BUSCAR DADOS DO USUÁRIO ---
+$stmt = $pdo->prepare("SELECT * FROM usuarios WHERE id = ?");
+$stmt->execute([$usuario_id]);
+$user = $stmt->fetch();
 
-// Buscar pedidos do usuário
-$stmt_pedidos = $pdo->prepare("SELECT * FROM pedidos WHERE usuario_id = ? ORDER BY data DESC");
+// Tenta separar Rua e Número para o formulário (visual)
+$endereco_db = $user['endereco'] ?? '';
+$numero_visual = '';
+$rua_visual = $endereco_db;
+
+// Se tiver vírgula, tenta separar (ex: Rua Tal, 123)
+if(strpos($endereco_db, ',') !== false) {
+    $partes = explode(',', $endereco_db);
+    $numero_visual = trim(end($partes)); // Pega a última parte
+    // Remove o número da rua para mostrar limpo
+    if(is_numeric($numero_visual)) {
+        array_pop($partes);
+        $rua_visual = trim(implode(',', $partes));
+    } else {
+        $numero_visual = ''; // Não era um número
+    }
+}
+
+// --- BUSCAR PEDIDOS ---
+$stmt_pedidos = $pdo->prepare("
+    SELECT p.*, l.nome as nome_loja, l.logo as logo_loja 
+    FROM pedidos p
+    LEFT JOIN lojas l ON p.loja_id = l.id
+    WHERE p.usuario_id = ? 
+    ORDER BY p.id DESC
+");
 $stmt_pedidos->execute([$usuario_id]);
 $pedidos = $stmt_pedidos->fetchAll();
-
-// Itens dos pedidos
-$itens_por_pedido = [];
-if ($pedidos) {
-    $pedido_ids = array_column($pedidos, 'id');
-    if (!empty($pedido_ids)) {
-        $ids_string = implode(',', $pedido_ids);
-        $stmt_itens = $pdo->query("
-            SELECT pi.*, p.nome as produto_nome 
-            FROM pedido_itens pi 
-            JOIN produtos p ON pi.produto_id = p.id 
-            WHERE pi.pedido_id IN ($ids_string)
-        ");
-        $todos_itens = $stmt_itens->fetchAll();
-        foreach ($todos_itens as $item) {
-            $itens_por_pedido[$item['pedido_id']][] = $item;
-        }
-    }
-}
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="index.css?v=<?php echo time(); ?>">
 
-</head>
-<body>
-    <section class="perfil">
-        <h1>Meu Perfil</h1>
+<div class="container profile-container">
+    
+    <aside class="profile-sidebar">
+        <div class="user-brief">
+            <div class="user-avatar-placeholder">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <h3><?php echo htmlspecialchars($user['nome']); ?></h3>
+            <span><?php echo htmlspecialchars($user['email']); ?></span>
+        </div>
 
-        <?php if(isset($_GET['pedido_sucesso'])): ?>
-            <p class="success">Seu pedido foi realizado com sucesso!</p>
+        <ul class="profile-menu">
+            <li>
+                <a href="#" class="active" onclick="showTab(event, 'tab-pedidos')">
+                    <i class="fa-solid fa-receipt"></i> Meus Pedidos
+                </a>
+            </li>
+            <li>
+                <a href="#" onclick="showTab(event, 'tab-dados')">
+                    <i class="fa-solid fa-address-card"></i> Meus Dados
+                </a>
+            </li>
+            <li>
+                <a href="logout.php" class="logout-link">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sair da Conta
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="profile-content">
+        
+        <?php if($mensagem): ?>
+            <div style="background:#d4edda; color:#155724; padding:10px; border-radius:5px; margin-bottom:20px; text-align:center;">
+                <?php echo $mensagem; ?>
+            </div>
+        <?php endif; ?>
+        
+        <?php if($erro): ?>
+            <div style="background:#f8d7da; color:#721c24; padding:10px; border-radius:5px; margin-bottom:20px; text-align:center;">
+                <?php echo $erro; ?>
+            </div>
         <?php endif; ?>
 
-        <div class="perfil-container">
-            <div class="perfil-form form-wrapper">
-                <h2>Meus Dados</h2>
-                <?php if (isset($sucesso_update)): ?>
-                    <p class="success"><?php echo $sucesso_update; ?></p>
-                <?php endif; ?>
-                <?php if (isset($erro_update)): ?>
-                    <p class="error"><?php echo $erro_update; ?></p>
-                <?php endif; ?>
-                
-                <form action="perfil.php" method="POST" id="perfilForm">
-                    <div class="form-group">
-                        <label class="required-field">Nome:</label>
-                        <input type="text" name="nome" value="<?php echo htmlspecialchars($usuario['nome']); ?>" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="required-field">Email:</label>
-                        <input type="email" name="email" value="<?php echo htmlspecialchars($usuario['email']); ?>" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="required-field">Telefone:</label>
-                        <input type="text" name="telefone" value="<?php echo htmlspecialchars($usuario['telefone']); ?>" required>
-                    </div>
-
-                    <h3>Endereço</h3>
-                    <div class="form-group">
-                        <label class="required-field">CEP:</label>
-                        <input type="text" name="cep" id="cep" maxlength="9" 
-                               value="<?php echo htmlspecialchars($usuario['cep']); ?>" required>
-                        <div id="cep-status"></div>
-                    </div>
-                    <div class="form-group">
-                        <label class="required-field">Endereço (Rua):</label>
-                        <input type="text" name="endereco" id="endereco" readonly
-                               value="<?php echo htmlspecialchars($usuario['endereco']); ?>" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="required-field">Número:</label>
-                        <input type="text" name="numero" value="<?php echo htmlspecialchars($usuario['numero']); ?>" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="required-field">Bairro:</label>
-                        <input type="text" name="bairro" id="bairro" readonly
-                               value="<?php echo htmlspecialchars($usuario['bairro']); ?>" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="required-field">Cidade:</label>
-                        <input type="text" name="cidade" id="cidade" readonly
-                               value="<?php echo htmlspecialchars($usuario['cidade']); ?>" required>
-                    </div>
-
-                    <button type="submit" class="btn" id="btn-atualizar">Atualizar Dados</button>
-                </form>
+        <div id="tab-pedidos" class="tab-content">
+            <div class="section-header">
+                <h2><i class="fa-solid fa-bag-shopping"></i> Histórico de Pedidos</h2>
             </div>
 
-            <div class="meus-pedidos">
-                <h2>Meus Pedidos</h2>
-                <?php if(empty($pedidos)): ?>
-                    <p>Você ainda não fez nenhum pedido.</p>
-                <?php else: ?>
-                    <div class="lista-pedidos">
-                        <?php foreach ($pedidos as $pedido): ?>
-                            <div class="pedido-card">
-                                <div class="pedido-header">
-                                    <div>
-                                        <strong>Pedido #<?php echo $pedido['id']; ?></strong>
-                                        <br>
-                                        <small><?php echo date('d/m/Y H:i', strtotime($pedido['data'])); ?></small>
-                                    </div>
-                                    <div>
-                                        <span class="status-<?php echo str_replace(' ', '_', $pedido['status']); ?>">
-                                            <?php echo ucwords(str_replace('_', ' ', $pedido['status'])); ?>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="pedido-body">
-                                    <ul>
-                                        <?php if (isset($itens_por_pedido[$pedido['id']])): ?>
-                                            <?php foreach ($itens_por_pedido[$pedido['id']] as $item): ?>
-                                                <li>
-                                                    <span><?php echo $item['quantidade']; ?>x <?php echo htmlspecialchars($item['produto_nome']); ?></span>
-                                                    <span>R$ <?php echo number_format($item['preco'] * $item['quantidade'], 2, ',', '.'); ?></span>
-                                                    <?php if(!empty($item['observacao'])): ?>
-                                                        <small class="observacao-item">
-                                                            <em><?php echo htmlspecialchars($item['observacao']); ?></em>
-                                                        </small>
-                                                    <?php endif; ?>
-                                                </li>
-                                            <?php endforeach; ?>
-                                        <?php endif; ?>
-                                    </ul>
-                                </div>
-                                <div class="pedido-footer">
-                                    <div>
-                                        <small>Taxa de Entrega: R$ <?php echo number_format($pedido['taxa_entrega'], 2, ',', '.'); ?></small>
-                                    </div>
-                                    <strong>Total: R$ <?php echo number_format($pedido['total'], 2, ',', '.'); ?></strong>
-                                </div>
+            <?php if (count($pedidos) > 0): ?>
+                <div class="order-list">
+                    <?php foreach ($pedidos as $ped): ?>
+                        <div class="order-card">
+                            <div class="order-info">
+                                <h4><?php echo htmlspecialchars($ped['nome_loja'] ?? 'Loja Desconhecida'); ?></h4>
+                                <p>Pedido #<?php echo $ped['id']; ?></p>
+                                <span class="order-date">
+                                    <i class="fa-regular fa-calendar"></i> 
+                                    <?php echo date('d/m/Y \à\s H:i', strtotime($ped['data'])); ?>
+                                </span>
                             </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
+                            <div class="order-status-price">
+                                <span class="order-price">R$ <?php echo number_format($ped['total'], 2, ',', '.'); ?></span>
+                                <span class="status-badge status-<?php echo $ped['status']; ?>">
+                                    <?php echo ucfirst(str_replace('_', ' ', $ped['status'])); ?>
+                                </span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="empty-state">
+                    <i class="fa-solid fa-basket-shopping"></i>
+                    <p>Você ainda não fez nenhum pedido.</p>
+                    <a href="index.php" class="btn-save-profile">Ir para o Início</a>
+                </div>
+            <?php endif; ?>
         </div>
-    </section>
 
-    <script>
-    // === Elementos do DOM ===
-    const cepInput = document.getElementById('cep');
-    const enderecoInput = document.getElementById('endereco');
-    const bairroInput = document.getElementById('bairro');
-    const cidadeInput = document.getElementById('cidade');
-    const cepStatus = document.getElementById('cep-status');
-    const btnAtualizar = document.getElementById('btn-atualizar');
-    const perfilForm = document.getElementById('perfilForm');
+        <div id="tab-dados" class="tab-content" style="display:none;">
+            <div class="section-header">
+                <h2><i class="fa-solid fa-user-pen"></i> Editar Perfil</h2>
+            </div>
 
-    let cepValido = false;
+            <form action="perfil.php" method="POST">
+                <input type="hidden" name="atualizar_perfil" value="1">
+                
+                <div class="profile-form-grid">
+                    <div class="form-group form-full">
+                        <label>Nome Completo</label>
+                        <input type="text" name="nome" value="<?php echo htmlspecialchars($user['nome']); ?>" required>
+                    </div>
 
-    function mostrarStatusCep(mensagem, tipo) {
-        cepStatus.innerHTML = mensagem;
-        cepStatus.className = 'cep-status ' + tipo;
-    }
+                    <div class="form-group">
+                        <label>E-mail</label>
+                        <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Telefone / WhatsApp</label>
+                        <input type="text" name="telefone" value="<?php echo htmlspecialchars($user['telefone'] ?? ''); ?>">
+                    </div>
 
-    function limparEndereco() {
-        enderecoInput.value = '';
-        bairroInput.value = '';
-        cidadeInput.value = '';
-        cepValido = false;
-        mostrarStatusCep('', '');
-        atualizarBotao();
-    }
+                    <div class="form-group">
+                        <label>CEP</label>
+                        <input type="text" name="cep" id="cep" value="<?php echo htmlspecialchars($user['cep'] ?? ''); ?>" maxlength="9">
+                        <small id="cep-msg"></small>
+                    </div>
+                    
+                    <div class="form-group"></div> <div class="form-group">
+                        <label>Rua / Avenida</label>
+                        <input type="text" name="rua" id="rua" value="<?php echo htmlspecialchars($rua_visual); ?>">
+                    </div>
+                    <div class="form-group">
+                        <label>Número</label>
+                        <input type="text" name="numero" value="<?php echo htmlspecialchars($numero_visual); ?>" placeholder="Ex: 123">
+                    </div>
 
-    function atualizarBotao() {
-        // Habilita o botão apenas se o CEP for válido
-        btnAtualizar.disabled = !cepValido;
-    }
+                    <div class="form-group">
+                        <label>Bairro</label>
+                        <input type="text" name="bairro" id="bairro" value="<?php echo htmlspecialchars($user['bairro'] ?? ''); ?>">
+                    </div>
+                    <div class="form-group">
+                        <label>Cidade</label>
+                        <input type="text" name="cidade" id="cidade" value="<?php echo htmlspecialchars($user['cidade'] ?? ''); ?>">
+                    </div>
+                </div>
 
-    async function consultarCep(cep) {
-        if (cep.length !== 8) {
-            limparEndereco();
-            return;
-        }
+                <button type="submit" class="btn-save-profile">
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
+                </button>
+            </form>
+        </div>
 
-        mostrarStatusCep('Consultando CEP...', 'cep-loading');
-        cepValido = false;
-        atualizarBotao();
+    </main>
+</div>
 
-        try {
-            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-            const data = await response.json();
-            
-            if (!data.erro && data.cep) {
-                enderecoInput.value = data.logradouro || '';
-                bairroInput.value = data.bairro || '';
-                cidadeInput.value = data.localidade || '';
-                cepValido = true;
-                mostrarStatusCep('✅ CEP válido', 'cep-valid');
-            } else {
-                limparEndereco();
-                mostrarStatusCep('❌ CEP não encontrado', 'cep-invalid');
-            }
-        } catch (error) {
-            limparEndereco();
-            mostrarStatusCep('❌ Erro ao consultar CEP', 'cep-invalid');
-            console.error('Erro ao consultar CEP:', error);
-        } finally {
-            atualizarBotao();
-        }
-    }
-
-    // Event listener para CEP
-    cepInput.addEventListener('input', () => {
-        const cep = cepInput.value.replace(/\D/g, '');
-        cepInput.value = cep.replace(/(\d{5})(\d{3})/, '$1-$2');
+<script>
+    // Função para alternar abas
+    function showTab(evt, tabId) {
+        evt.preventDefault();
+        // Esconde todas as abas
+        document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+        // Remove active dos links
+        document.querySelectorAll('.profile-menu a').forEach(link => link.classList.remove('active'));
         
-        if (cep.length === 8) {
-            consultarCep(cep);
-        } else {
-            limparEndereco();
-        }
-    });
+        // Mostra a aba clicada
+        document.getElementById(tabId).style.display = 'block';
+        evt.currentTarget.classList.add('active');
+    }
 
-    // Validação do formulário de perfil
-    perfilForm.addEventListener('submit', (e) => {
-        // Verificar se CEP é válido
-        if (!cepValido) {
-            e.preventDefault();
-            alert('Por favor, informe um CEP válido antes de atualizar.');
-            return;
-        }
+    // Busca de CEP
+    const cepInput = document.getElementById('cep');
+    if(cepInput){
+        cepInput.addEventListener('input', (e) => {
+            let val = e.target.value.replace(/\D/g, '');
+            e.target.value = val.replace(/^(\d{5})(\d)/, '$1-$2');
+            
+            if (val.length === 8) {
+                fetch(`https://viacep.com.br/ws/${val}/json/`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.erro) {
+                        document.getElementById('rua').value = data.logradouro;
+                        document.getElementById('bairro').value = data.bairro;
+                        document.getElementById('cidade').value = data.localidade;
+                    }
+                });
+            }
+        });
+    }
+</script>
 
-        // Verificar se os campos de endereço foram preenchidos
-        if (!enderecoInput.value || !bairroInput.value || !cidadeInput.value) {
-            e.preventDefault();
-            alert('Por favor, aguarde o CEP ser consultado ou informe um CEP válido.');
-            return;
-        }
-    });
-
-    // Consultar CEP automaticamente se já houver valor no carregamento
-    document.addEventListener('DOMContentLoaded', function() {
-        const cepInicial = cepInput.value.replace(/\D/g, '');
-        if (cepInicial.length === 8) {
-            consultarCep(cepInicial);
-        } else {
-            atualizarBotao(); // Garante que o botão está no estado correto
-        }
-    });
-    </script>
-
-    <?php require_once __DIR__ . '/../includes/footer.php'; ?>
-</body>
-</html>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

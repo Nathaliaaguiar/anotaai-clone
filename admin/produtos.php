@@ -1,13 +1,12 @@
 <?php
-require_once 'includes/header.php';
 require_once 'includes/auth_check.php';
+require_once 'includes/header.php'; // Já carrega o header.css
 
 $loja_id = $_SESSION['admin_loja_id'];
 $mensagem = '';
 
-// --- LÓGICA DE UPLOAD E CRUD ---
+// --- LÓGICA CRUD (Editar/Salvar/Excluir) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 1. Pega os dados do formulário
     $nome = $_POST['nome'];
     $descricao = $_POST['descricao'];
     $preco = $_POST['preco'];
@@ -15,175 +14,193 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = $_POST['id'] ?? null;
     $ativo = isset($_POST['ativo']) ? 1 : 0;
     
-    // Pega o nome da foto atual se estiver editando
+    // Upload de Foto
     $foto_nome = $_POST['foto_atual'] ?? null;
-
-    // 2. LÓGICA PARA UPLOAD DA NOVA FOTO
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] == UPLOAD_ERR_OK) {
-        $upload_dir = __DIR__ . '/../uploads/produtos/'; // Pasta correta!
+        $upload_dir = __DIR__ . '/../uploads/produtos/';
+        if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
         
-        // Garante que o diretório exista
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
-        }
-
-        // Gera um nome único para o arquivo para evitar substituições
-        $extensao = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
-        $novo_nome_arquivo = uniqid('prod_') . '.' . $extensao;
-        
-        if (move_uploaded_file($_FILES['foto']['tmp_name'], $upload_dir . $novo_nome_arquivo)) {
-            // Se o upload deu certo, o novo nome do arquivo é o que será salvo
-            $foto_nome = $novo_nome_arquivo;
-        } else {
-            $mensagem = "Erro ao mover o arquivo de imagem.";
+        $ext = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
+        $novo_nome = uniqid() . '.' . $ext;
+        if (move_uploaded_file($_FILES['foto']['tmp_name'], $upload_dir . $novo_nome)) {
+            $foto_nome = $novo_nome;
         }
     }
 
-    // 3. ATUALIZA OU INSERE NO BANCO DE DADOS
-    if (empty($mensagem)) { // Continua apenas se não houve erro no upload
-        try {
-            if ($id) { // UPDATE (Editar produto existente)
-                $stmt = $pdo->prepare(
-                    "UPDATE produtos SET nome = ?, descricao = ?, preco = ?, categoria_id = ?, ativo = ?, foto = ? WHERE id = ? AND loja_id = ?"
-                );
-                $stmt->execute([$nome, $descricao, $preco, $categoria_id, $ativo, $foto_nome, $id, $loja_id]);
-                $mensagem = "Produto atualizado com sucesso!";
-            } else { // INSERT (Adicionar novo produto)
-                $stmt = $pdo->prepare(
-                    "INSERT INTO produtos (nome, descricao, preco, categoria_id, ativo, foto, loja_id) VALUES (?, ?, ?, ?, ?, ?, ?)"
-                );
-                $stmt->execute([$nome, $descricao, $preco, $categoria_id, $ativo, $foto_nome, $loja_id]);
-                $mensagem = "Produto adicionado com sucesso!";
-            }
-            // Limpa os dados do formulário após o sucesso
-            $_POST = [];
-            
-        } catch (Exception $e) {
-            $mensagem = "Erro ao salvar no banco de dados: " . $e->getMessage();
-        }
+    if ($id) {
+        $stmt = $pdo->prepare("UPDATE produtos SET nome=?, descricao=?, preco=?, categoria_id=?, foto=?, ativo=? WHERE id=? AND loja_id=?");
+        $stmt->execute([$nome, $descricao, $preco, $categoria_id, $foto_nome, $ativo, $id, $loja_id]);
+    } else {
+        $stmt = $pdo->prepare("INSERT INTO produtos (loja_id, nome, descricao, preco, categoria_id, foto, ativo) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$loja_id, $nome, $descricao, $preco, $categoria_id, $foto_nome, $ativo]);
     }
-}
-
-// --- LÓGICA PARA EXCLUIR ---
-if (isset($_GET['delete'])) {
-    $id_para_deletar = $_GET['delete'];
-    $stmt = $pdo->prepare("DELETE FROM produtos WHERE id = ? AND loja_id = ?");
-    $stmt->execute([$id_para_deletar, $loja_id]);
-    header("Location: produtos.php");
+    header('Location: produtos.php');
     exit;
 }
 
-// --- BUSCA DADOS PARA PREENCHER O FORMULÁRIO DE EDIÇÃO ---
-$produto_para_editar = null;
-if (isset($_GET['edit'])) {
-    $id_para_editar = $_GET['edit'];
-    $stmt = $pdo->prepare("SELECT * FROM produtos WHERE id = ? AND loja_id = ?");
-    $stmt->execute([$id_para_editar, $loja_id]);
-    $produto_para_editar = $stmt->fetch();
+// Exclusão
+if (isset($_GET['delete'])) {
+    $id = $_GET['delete'];
+    $stmt = $pdo->prepare("DELETE FROM produtos WHERE id = ? AND loja_id = ?");
+    $stmt->execute([$id, $loja_id]);
+    header('Location: produtos.php');
+    exit;
 }
 
+// Busca produto para edição
+$produto_edit = null;
+if (isset($_GET['edit'])) {
+    $stmt = $pdo->prepare("SELECT * FROM produtos WHERE id = ? AND loja_id = ?");
+    $stmt->execute([$_GET['edit'], $loja_id]);
+    $produto_edit = $stmt->fetch();
+}
 
-// --- BUSCA DADOS PARA A LISTA ---
-// MODIFICADO: Busca categorias apenas da loja logada
-$stmt_cat = $pdo->prepare("SELECT * FROM categorias WHERE loja_id = ? ORDER BY nome ASC");
-$stmt_cat->execute([$loja_id]);
-$categorias = $stmt_cat->fetchAll();
+// Listas
+$categorias = $pdo->prepare("SELECT * FROM categorias WHERE loja_id = ?");
+$categorias->execute([$loja_id]);
+$lista_cats = $categorias->fetchAll();
 
-// MODIFICADO: Busca produtos apenas da loja logada, e junta com o nome da categoria
-$stmt_prod = $pdo->prepare(
-    "SELECT p.*, c.nome as nome_categoria 
-     FROM produtos p 
-     LEFT JOIN categorias c ON p.categoria_id = c.id 
-     WHERE p.loja_id = ? ORDER BY p.nome ASC"
-);
-$stmt_prod->execute([$loja_id]);
-$produtos = $stmt_prod->fetchAll();
+$lista_prods = $pdo->prepare("
+    SELECT p.*, c.nome as nome_categoria 
+    FROM produtos p 
+    LEFT JOIN categorias c ON p.categoria_id = c.id 
+    WHERE p.loja_id = ? 
+    ORDER BY p.id DESC
+");
+$lista_prods->execute([$loja_id]);
+$produtos = $lista_prods->fetchAll();
 ?>
-<section class="container-admin">
-    <?php if (!empty($mensagem)): ?>
-        <div class="alert alert-success"><?= $mensagem ?></div>
-    <?php endif; ?>
 
-    <div class="form-admin">
-        <h3><?php echo $produto_para_editar ? 'Editar Produto' : 'Adicionar Novo Produto'; ?></h3>
+<link rel="stylesheet" href="../css/produto.css?v=1">
+
+<section class="admin-crud">
+    
+    <h1>Gerenciar Produtos</h1>
+
+    <div class="form-produto-card">
+        <h3 style="margin-top:0; margin-bottom:20px; color:#555;">
+            <?php echo $produto_edit ? 'Editar Produto' : 'Novo Produto'; ?>
+        </h3>
+        
         <form action="produtos.php" method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="id" value="<?php echo $produto_para_editar['id'] ?? ''; ?>">
-            <input type="hidden" name="foto_atual" value="<?php echo $produto_para_editar['foto'] ?? ''; ?>">
+            <input type="hidden" name="id" value="<?php echo $produto_edit['id'] ?? ''; ?>">
+            <input type="hidden" name="foto_atual" value="<?php echo $produto_edit['foto'] ?? ''; ?>">
 
-            <div class="form-group">
-                <label>Nome</label>
-                <input type="text" name="nome" value="<?php echo htmlspecialchars($produto_para_editar['nome'] ?? ''); ?>" required>
+            <div class="form-grid">
+                <div>
+                    <div class="form-group">
+                        <label>Nome do Produto</label>
+                        <input type="text" name="nome" value="<?php echo htmlspecialchars($produto_edit['nome'] ?? ''); ?>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select name="categoria_id" required>
+                            <option value="">Selecione...</option>
+                            <?php foreach ($lista_cats as $c): ?>
+                                <option value="<?php echo $c['id']; ?>" <?php if (($produto_edit['categoria_id'] ?? '') == $c['id']) echo 'selected'; ?>>
+                                    <?php echo htmlspecialchars($c['nome']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Preço (R$)</label>
+                        <input type="number" step="0.01" name="preco" value="<?php echo $produto_edit['preco'] ?? ''; ?>" required>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="form-group">
+                        <label>Foto do Produto</label>
+                        <input type="file" name="foto" accept="image/*">
+                        <?php if (!empty($produto_edit['foto'])): ?>
+                            <div style="margin-top: 10px;">
+                                <img src="../uploads/produtos/<?php echo $produto_edit['foto']; ?>" class="img-thumb" style="width: 80px; height: 80px;">
+                                <small style="display:block; color:#999;">Foto atual</small>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <textarea name="descricao"><?php echo htmlspecialchars($produto_edit['descricao'] ?? ''); ?></textarea>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="ativo" id="ativo" <?php if (($produto_edit['ativo'] ?? 1) == 1) echo 'checked'; ?>>
+                        <label for="ativo">Produto Disponível para Venda</label>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Descrição</label>
-                <textarea name="descricao"><?php echo htmlspecialchars($produto_para_editar['descricao'] ?? ''); ?></textarea>
-            </div>
-            <div class="form-group">
-                <label>Preço</label>
-                <input type="number" step="0.01" name="preco" value="<?php echo htmlspecialchars($produto_para_editar['preco'] ?? ''); ?>" required>
-            </div>
-            <div class="form-group">
-                <label>Categoria</label>
-                <select name="categoria_id" required>
-                    <option value="">Selecione...</option>
-                    <?php foreach ($categorias as $categoria): ?>
-                        <option value="<?php echo $categoria['id']; ?>" <?php echo (isset($produto_para_editar['categoria_id']) && $produto_para_editar['categoria_id'] == $categoria['id']) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($categoria['nome']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>Foto do Produto</label>
-                <input type="file" name="foto" accept="image/png, image/jpeg, image/webp">
-                <?php if (!empty($produto_para_editar['foto'])): ?>
-                    <p>Foto atual: <img src="../uploads/produtos/<?= htmlspecialchars($produto_para_editar['foto']) ?>" width="50" alt=""></p>
+
+            <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+                <button type="submit" class="btn-save">
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar Produto
+                </button>
+                <?php if ($produto_edit): ?>
+                    <a href="produtos.php" class="btn-cancel">Cancelar Edição</a>
                 <?php endif; ?>
             </div>
-            
-            <div class="form-group-checkbox">
-                <input type="checkbox" name="ativo" id="ativo" value="1" <?php echo (isset($produto_para_editar['ativo']) && $produto_para_editar['ativo']) ? 'checked' : ''; ?>>
-                <label for="ativo">Produto Ativo?</label>
-            </div>
-
-            <button type="submit" class="btn"><?php echo $produto_para_editar ? 'Atualizar' : 'Adicionar'; ?></button>
         </form>
     </div>
-    
-    <h2>Lista de Produtos</h2>
-    <table class="tabela-admin">
-        <thead>
-            <tr>
-                <th>Foto</th>
-                <th>Nome</th>
-                <th>Categoria</th>
-                <th>Preço</th>
-                <th>Ativo</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($produtos as $produto): ?>
+
+    <div class="table-responsive">
+        <table class="tabela-admin">
+            <thead>
                 <tr>
-                    <td>
-                        <?php if(!empty($produto['foto'])): ?>
-                            <img src="../uploads/produtos/<?php echo htmlspecialchars($produto['foto']); ?>" alt="<?php echo htmlspecialchars($produto['nome']); ?>" width="60">
-                        <?php else: ?>
-                            <img src="https://placehold.co/60x60/f0f0f0/333?text=S/Foto" alt="Sem foto">
-                        <?php endif; ?>
-                    </td>
-                    <td><?php echo htmlspecialchars($produto['nome']); ?></td>
-                    <td><?php echo htmlspecialchars($produto['nome_categoria'] ?? 'Sem categoria'); ?></td>
-                    <td>R$ <?php echo number_format($produto['preco'], 2, ',', '.'); ?></td>
-                    <td><?php echo $produto['ativo'] ? 'Sim' : 'Não'; ?></td>
-                   <td>
-                        <a href="produtos.php?edit=<?php echo $produto['id']; ?>" class="btn-edit">Editar</a>
-                        <a href="produtos.php?delete=<?php echo $produto['id']; ?>" class="btn-remover" onclick="return confirm('Tem certeza?');">Excluir</a>
-                    </td>
+                    <th>Foto</th>
+                    <th>Nome</th>
+                    <th>Categoria</th>
+                    <th>Preço</th>
+                    <th>Ativo</th>
+                    <th>Ações</th>
                 </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <?php foreach ($produtos as $produto): ?>
+                    <tr>
+                        <td>
+                            <?php if(!empty($produto['foto'])): ?>
+                                <img src="../uploads/produtos/<?php echo htmlspecialchars($produto['foto']); ?>" class="img-thumb">
+                            <?php else: ?>
+                                <img src="https://placehold.co/60x60/f0f0f0/ccc?text=S/Foto" class="img-thumb">
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <strong><?php echo htmlspecialchars($produto['nome']); ?></strong>
+                            <?php if(!empty($produto['descricao'])): ?>
+                                <br><small style="color:#999;"><?php echo substr(htmlspecialchars($produto['descricao']), 0, 30) . '...'; ?></small>
+                            <?php endif; ?>
+                        </td>
+                        <td><?php echo htmlspecialchars($produto['nome_categoria'] ?? '---'); ?></td>
+                        <td>R$ <?php echo number_format($produto['preco'], 2, ',', '.'); ?></td>
+                        <td>
+                            <?php if($produto['ativo']): ?>
+                                <span style="color: green; font-weight:bold;"><i class="fa-solid fa-check"></i> Sim</span>
+                            <?php else: ?>
+                                <span style="color: red; font-weight:bold;">Não</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="produto_opcoes.php?produto_id=<?php echo $produto['id']; ?>" class="btn-opcoes" title="Configurar Adicionais">
+                                    <i class="fa-solid fa-list-check"></i> Opções
+                                </a>
+                                <a href="produtos.php?edit=<?php echo $produto['id']; ?>" class="btn-edit" title="Editar">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
+                                <a href="produtos.php?delete=<?php echo $produto['id']; ?>" class="btn-remover" onclick="return confirm('Excluir este produto?');" title="Excluir">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 </section>
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

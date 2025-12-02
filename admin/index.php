@@ -1,10 +1,12 @@
 <?php
 session_start();
 ob_start();
+
+// 1. CORREÇÃO DE CAMINHO DO BANCO
+// Como este arquivo está em 'admin/', precisamos voltar um nível (../)
 require_once __DIR__ . '/../config/db.php';
 
 ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 $erro_login = '';
@@ -12,255 +14,266 @@ $erro_cadastro = '';
 $sucesso_cadastro = '';
 
 /* ========================
-   FUNÇÃO DE VALIDAÇÃO DE CEP
+   FUNÇÕES AUXILIARES
 ======================== */
 function validarCEP($cep) {
     $cep = preg_replace('/[^0-9]/', '', $cep);
     if (strlen($cep) !== 8) return false;
-
     try {
-        $response = file_get_contents("https://viacep.com.br/ws/{$cep}/json/");
+        $ctx = stream_context_create(['http'=> ['timeout' => 3]]);
+        $response = @file_get_contents("https://viacep.com.br/ws/{$cep}/json/", false, $ctx);
+        if(!$response) return false;
         $data = json_decode($response, true);
         return !isset($data['erro']) && !empty($data['cep']);
-    } catch (Exception $e) {
-        return false;
-    }
+    } catch (Exception $e) { return false; }
 }
+
 function pegarLatLng($endereco) {
     $url = 'https://nominatim.openstreetmap.org/search?' . http_build_query([
-        'q' => $endereco,
-        'format' => 'json',
-        'limit' => 1
+        'q' => $endereco, 'format' => 'json', 'limit' => 1
     ]);
-
-    $opts = [
-        "http" => [
-            "header" => "User-Agent: Platafood/1.0\r\n"
-        ]
-    ];
-
+    $opts = ["http" => ["header" => "User-Agent: Platafood/1.0\r\n"]];
     $context = stream_context_create($opts);
-    $resultado = file_get_contents($url, false, $context);
-    $data = json_decode($resultado, true);
-
-    if (!empty($data)) {
-        return ['lat' => $data[0]['lat'], 'lng' => $data[0]['lon']];
-    }
-
-    return ['lat' => null, 'lng' => null];
+    try {
+        $response = @file_get_contents($url, false, $context);
+        if(!$response) return null;
+        $data = json_decode($response, true);
+        if (!empty($data)) return ['lat' => $data[0]['lat'], 'lng' => $data[0]['lon']];
+    } catch (Exception $e) { return null; }
+    return null;
 }
 
-/* ========================
-   LOGIN DA LOJA
-======================== */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
-    $email = trim($_POST['email']);
-    $senha = $_POST['senha'];
-
-    $stmt = $pdo->prepare("SELECT * FROM lojas WHERE email = ?");
-    $stmt->execute([$email]);
-    $loja = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($loja) {
-        if (password_verify($senha, $loja['senha'])) {
-            if ($loja['ativa'] == 0 && $loja['aprovado'] == 1) {
-                $erro_login = "❌ Sua conta está desativada por descumprimento de regras. Ela voltará em breve. Caso você não siga as regras, sua conta poderá ser banida.";
-            } elseif ($loja['aprovado'] == 0) {
-                $erro_login = "A sua loja ainda está em análise pelo administrador.";
-            } else {
-                $_SESSION['admin_loja_id'] = $loja['id'];
-                $_SESSION['loja_nome'] = $loja['nome'];
-                header("Location: dashboard.php");
-                exit;
-            }
-        } else {
-            $erro_login = "E-mail ou senha incorretos.";
-        }
-    } else {
-        // Verifica se a loja foi excluída
-        $stmtExcluida = $pdo->prepare("SELECT * FROM lojas_excluidas WHERE email = ?");
-        $stmtExcluida->execute([$email]);
-        $excluida = $stmtExcluida->fetch(PDO::FETCH_ASSOC);
-
-        if ($excluida) {
-            $erro_login = "🚫 Sua conta foi excluída por descumprimento das diretrizes.";
-        } else {
-            $erro_login = "E-mail ou senha incorretos.";
-        }
-    }
-}
-
-/* ========================
-   CADASTRO DE NOVA LOJA
-======================== */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastro'])) {
+// --- PROCESSAR CADASTRO ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastrar_loja'])) {
     $nome = trim($_POST['nome_loja']);
-    $email = trim($_POST['email_admin']);
+    $email = trim($_POST['email_cadastro']);
     $senha = $_POST['senha_cadastro'];
-    $confirmar_senha = $_POST['confirmar_senha'];
-    $telefone = trim($_POST['telefone']);
-    $cep = trim($_POST['cep_loja']);
-    $rua = trim($_POST['rua_loja']);
-    $bairro = trim($_POST['bairro_loja']);
-    $cidade = trim($_POST['cidade_loja']);
-    $numero = trim($_POST['numero']);
+    $confirmar = $_POST['confirmar_senha'];
+    $cep = preg_replace('/[^0-9]/', '', $_POST['cep']);
+    $rua = trim($_POST['rua']);
+    $bairro = trim($_POST['bairro']);
+    $cidade = trim($_POST['cidade']);
+    $estado = trim($_POST['estado']);
 
-    // Validação do CEP
-    if (!validarCEP($cep)) {
-        $erro_cadastro = "CEP inválido ou inexistente. Verifique e tente novamente.";
-    }
-    $endereco_completo = "$rua, $numero - $bairro, $cidade, $cep";
-$coordenadas = pegarLatLng($endereco_completo);
-$lat = $coordenadas['lat'];
-$lng = $coordenadas['lng'];
-
-if (!$lat || !$lng) {
-    $erro_cadastro = "Não foi possível localizar a localização da loja. Verifique os dados do endereço e CEP.";
-}
-
-
-    // Validação de senha
-    if ($senha !== $confirmar_senha) {
+    if (empty($nome) || empty($email) || empty($senha)) {
+        $erro_cadastro = "Preencha os campos obrigatórios.";
+    } elseif ($senha !== $confirmar) {
         $erro_cadastro = "As senhas não coincidem.";
     } elseif (strlen($senha) < 6) {
-        $erro_cadastro = "A senha deve ter pelo menos 6 caracteres.";
-    }
+        $erro_cadastro = "Senha muito curta (mínimo 6).";
+    } else {
+        $stmtCheck = $pdo->prepare("SELECT id FROM lojas WHERE email = ?");
+        $stmtCheck->execute([$email]);
+        if ($stmtCheck->rowCount() > 0) {
+            $erro_cadastro = "E-mail já cadastrado.";
+        } else {
+            $endereco_completo = "$rua, $bairro, $cidade - $estado, $cep";
+            $coords = pegarLatLng($endereco_completo);
+            $lat = $coords ? $coords['lat'] : null;
+            $lng = $coords ? $coords['lng'] : null;
 
-    // Só continua se não tiver erro
-    if (empty($erro_cadastro)) {
-        try {
-            $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
-
-            // Inserção na tabela lojas
-           $stmt = $pdo->prepare("INSERT INTO lojas 
-    (nome, email, senha, telefone, cep, endereco, numero, bairro, cidade, lat, lng, aprovado, ativa, data_criacao)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, NOW())");
-$stmt->execute([
-    $nome, $email, $senha_hash, $telefone, $cep, $rua, $numero, $bairro, $cidade, $lat, $lng
-]);
-
-
-            $loja_id = $pdo->lastInsertId();
-
-            // Inserir registro na tabela admins
-            $stmt_admin = $pdo->prepare("INSERT INTO admins (loja_id, email, senha) VALUES (?, ?, ?)");
-            $stmt_admin->execute([$loja_id, $email, $senha_hash]);
-
-            $sucesso_cadastro = "✅ Loja cadastrada com sucesso! Aguarde a aprovação do administrador.";
-        } catch (PDOException $e) {
-            if ($e->errorInfo[1] == 1062) {
-                $erro_cadastro = "Este e-mail já está cadastrado.";
-            } else {
+            $hash = password_hash($senha, PASSWORD_DEFAULT);
+            try {
+                // ATENÇÃO: A loja é criada com aprovado=0. 
+                // Você precisa alterar para 1 no banco de dados para conseguir logar!
+                $stmt = $pdo->prepare("INSERT INTO lojas (nome, email, senha, cep, endereco, bairro, cidade, estado, latitude, longitude, aprovado, ativa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)");
+                $stmt->execute([$nome, $email, $hash, $cep, $rua, $bairro, $cidade, $estado, $lat, $lng]);
+                $sucesso_cadastro = "Cadastro realizado! Aguarde a aprovação do administrador.";
+            } catch (PDOException $e) {
                 $erro_cadastro = "Erro ao cadastrar: " . $e->getMessage();
             }
         }
     }
 }
-?>
 
+// --- PROCESSAR LOGIN ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logar_loja'])) {
+    $email = trim($_POST['email_login']);
+    $senha = $_POST['senha_login'];
+
+    $stmt = $pdo->prepare("SELECT * FROM lojas WHERE email = ?");
+    $stmt->execute([$email]);
+    $loja = $stmt->fetch();
+
+    if ($loja && password_verify($senha, $loja['senha'])) {
+        // Verifica se a loja foi aprovada no banco de dados
+        if ($loja['aprovado'] == 1) {
+            
+            // Login com sucesso
+            $_SESSION['admin_loja_id'] = $loja['id'];
+            $_SESSION['admin_loja_nome'] = $loja['nome'];
+            
+            // 2. CORREÇÃO DE REDIRECIONAMENTO
+            // Vai para dashboard.php (que está na mesma pasta 'admin')
+            header('Location: dashboard.php'); 
+            exit;
+
+        } else {
+            $erro_login = "Sua loja aguarda aprovação. Mude 'aprovado' para 1 no banco de dados.";
+        }
+    } else {
+        $erro_login = "E-mail ou senha incorretos.";
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Acesso da Loja - Platafood</title>
-<link rel="stylesheet" href="./css/index.css">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-button[disabled],
-button:disabled { background-color: #ccc !important; color: #666 !important; cursor: not-allowed !important; opacity: 0.8; }
-button.btn:not(:disabled) { color: white; cursor: pointer; transition: background 0.3s ease; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área do Parceiro - Platafood</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="../css/index.css?v=3">
 </head>
-<body class="login-page">
+<body>
 
-<header class="page-header">
-   <h1>Bem-vindo ao Plata<span>food</span></h1>
-   <p>Gerencie sua loja e pedidos de forma prática e segura.</p>
-</header>
+    <div class="auth-container">
+        
+        <div class="auth-header">
+            <div class="logo">
+                <i class="fa-solid fa-utensils" style="color: #ff6f00; margin-right:5px;"></i>
+                Plata<span>Food</span>
+            </div>
+            <p class="auth-subtitle">Portal do Parceiro</p>
+        </div>
 
-<div class="auth-container">
-    <!-- LOGIN -->
-    <div class="form-wrapper">
-        <h2>Login da Loja</h2>
-        <?php if ($erro_login): ?><p class="error"><?= htmlspecialchars($erro_login) ?></p><?php endif; ?>
-        <form method="POST">
-            <div class="form-group"><label>E-mail</label><input type="email" name="email" required></div>
-            <div class="form-group"><label>Senha</label><input type="password" name="senha" required></div>
-            <button type="submit" name="login" class="btn">Entrar</button>
-        </form>
+        <?php if ($sucesso_cadastro): ?>
+            <div class="alert alert-success"><?php echo $sucesso_cadastro; ?></div>
+        <?php endif; ?>
+
+        <div id="loginSection" class="form-section active">
+            <?php if ($erro_login): ?>
+                <div class="alert alert-error"><?php echo $erro_login; ?></div>
+            <?php endif; ?>
+
+            <form action="index.php" method="POST">
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" name="email_login" required placeholder="seu@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" name="senha_login" required placeholder="••••••••">
+                </div>
+                <button type="submit" name="logar_loja" class="btn-primary">Entrar</button>
+            </form>
+
+            <div class="toggle-link">
+                Ainda não tem uma conta? <a onclick="mostrarCadastro()">Cadastre sua loja</a>
+            </div>
+        </div>
+
+        <div id="cadastroSection" class="form-section">
+            <?php if ($erro_cadastro): ?>
+                <div class="alert alert-error"><?php echo $erro_cadastro; ?></div>
+            <?php endif; ?>
+
+            <form action="index.php" method="POST" id="cadastroLojaForm">
+                <div class="form-group">
+                    <label>Nome da Loja</label>
+                    <input type="text" name="nome_loja" required placeholder="Ex: Hamburgueria do João">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>E-mail</label>
+                        <input type="email" name="email_cadastro" required>
+                    </div>
+                    <div class="form-group">
+                        <label>CEP <span id="cep-feedback"></span></label>
+                        <input type="text" name="cep" id="cep" maxlength="9" required placeholder="00000-000">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group"><label>Rua</label><input type="text" name="rua" id="rua" readonly style="background:#eee;"></div>
+                    <div class="form-group"><label>Bairro</label><input type="text" name="bairro" id="bairro" readonly style="background:#eee;"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Cidade</label><input type="text" name="cidade" id="cidade" readonly style="background:#eee;"></div>
+                    <div class="form-group"><label>UF</label><input type="text" name="estado" id="estado" readonly style="background:#eee;"></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Senha</label>
+                        <input type="password" name="senha_cadastro" id="senha_cadastro" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmar</label>
+                        <input type="password" name="confirmar_senha" id="confirmar_senha" required>
+                    </div>
+                </div>
+
+                <button type="submit" name="cadastrar_loja" id="btnCadastrar" class="btn-primary" disabled title="Preencha o CEP e as senhas">Cadastrar Loja</button>
+            </form>
+
+            <div class="toggle-link">
+                Já tem cadastro? <a onclick="mostrarLogin()">Faça login</a>
+            </div>
+        </div>
+
     </div>
 
-    <!-- CADASTRO -->
-    <div class="form-wrapper">
-        <h2>Cadastrar Nova Loja</h2>
-        <?php if ($erro_cadastro): ?><p class="error"><?= htmlspecialchars($erro_cadastro) ?></p><?php endif; ?>
-        <?php if ($sucesso_cadastro): ?><p class="success"><?= htmlspecialchars($sucesso_cadastro) ?></p><?php endif; ?>
+    <script>
+        function mostrarCadastro() {
+            document.getElementById('loginSection').classList.remove('active');
+            document.getElementById('cadastroSection').classList.add('active');
+        }
+        function mostrarLogin() {
+            document.getElementById('cadastroSection').classList.remove('active');
+            document.getElementById('loginSection').classList.add('active');
+        }
 
-        <form method="POST" id="cadastroLojaForm">
-            <div class="form-group"><label>Nome da Loja *</label><input type="text" name="nome_loja" required></div>
-            <div class="form-group"><label>E-mail de Acesso *</label><input type="email" name="email_admin" required></div>
-            <div class="form-group"><label>Senha *</label><input type="password" id="senha_cadastro" name="senha_cadastro" required minlength="6"></div>
-            <div class="form-group"><label>Confirmar Senha *</label><input type="password" id="confirmar_senha" name="confirmar_senha" required></div>
-            <div class="form-group"><label>Telefone / WhatsApp *</label><input type="tel" name="telefone" required></div>
-            <div class="form-group"><label>CEP *</label><input type="text" id="cep_loja" name="cep_loja" maxlength="9" required></div>
-            <div class="form-group"><label>Rua *</label><input type="text" id="rua_loja" name="rua_loja" readonly required></div>
-            <div class="form-group"><label>Bairro *</label><input type="text" id="bairro_loja" name="bairro_loja" readonly required></div>
-            <div class="form-group"><label>Cidade *</label><input type="text" id="cidade_loja" name="cidade_loja" readonly required></div>
-            <div class="form-group"><label>Nº da casa *</label><input type="text" id="numero" name="numero" required></div>
-            <button type="submit" name="cadastro" class="btn" id="btn-cadastrar" disabled>Cadastrar Loja</button>
-        </form>
-    </div>
-</div>
+        <?php if ($erro_cadastro): ?> mostrarCadastro(); <?php endif; ?>
 
-<footer class="page-footer">
-    <p>&copy; <?= date('Y'); ?> Platafood. Todos os direitos reservados.</p>
-</footer>
+        // Lógica de CEP
+        const cepInput = document.getElementById('cep');
+        const btnCadastrar = document.getElementById('btnCadastrar');
+        const cepFeedback = document.getElementById('cep-feedback');
+        let cepValido = false;
 
-<script>
-const cepInput = document.getElementById('cep_loja');
-const ruaInput = document.getElementById('rua_loja');
-const bairroInput = document.getElementById('bairro_loja');
-const cidadeInput = document.getElementById('cidade_loja');
-const btnCadastrar = document.getElementById('btn-cadastrar');
+        async function buscarCep() {
+            let cep = cepInput.value.replace(/\D/g, '');
+            if (cep.length !== 8) { cepValido = false; verificarCampos(); return; }
+            cepFeedback.innerText = '...';
+            try {
+                const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                const data = await res.json();
+                if (!data.erro) {
+                    document.getElementById('rua').value = data.logradouro;
+                    document.getElementById('bairro').value = data.bairro;
+                    document.getElementById('cidade').value = data.localidade;
+                    document.getElementById('estado').value = data.uf;
+                    cepFeedback.innerText = '✓'; cepFeedback.className = 'valid';
+                    cepValido = true;
+                } else {
+                    cepFeedback.innerText = 'X'; cepFeedback.className = 'invalid';
+                    cepValido = false;
+                }
+            } catch { cepValido = false; }
+            verificarCampos();
+        }
 
-let cepValido = false;
+        function verificarCampos() {
+            const s1 = document.getElementById('senha_cadastro').value;
+            const s2 = document.getElementById('confirmar_senha').value;
+            if(cepValido && s1.length >= 6 && s1 === s2) {
+                btnCadastrar.disabled = false;
+            } else {
+                btnCadastrar.disabled = true;
+            }
+        }
 
-async function consultarCep(cep) {
-    cep = cep.replace(/\D/g, '');
-    if (cep.length !== 8) { ruaInput.value=''; bairroInput.value=''; cidadeInput.value=''; cepValido=false; verificarCampos(); return; }
-    try {
-        const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-        const data = await res.json();
-        if(!data.erro){ ruaInput.value=data.logradouro||''; bairroInput.value=data.bairro||''; cidadeInput.value=data.localidade||''; cepValido=true; }
-        else{cepValido=false;}
-    } catch { cepValido=false; }
-    verificarCampos();
-}
-
-function verificarCampos() {
-    const campos = document.querySelectorAll('#cadastroLojaForm input[required]');
-    const todosPreenchidos = Array.from(campos).every(campo=>campo.value.trim()!=='');
-    const senha = document.getElementById('senha_cadastro').value;
-    const confirmar = document.getElementById('confirmar_senha').value;
-    const senhasOK = senha.length>=6 && senha===confirmar;
-    btnCadastrar.disabled = !(todosPreenchidos && cepValido && senhasOK);
-}
-
-btnCadastrar.addEventListener('click', e => {
-    if(btnCadastrar.disabled){ e.preventDefault(); alert("⚠️ Preencha todos os campos corretamente antes de cadastrar."); }
-});
-
-cepInput.addEventListener('input', e=>{
-    const cep = e.target.value.replace(/\D/g,'');
-    e.target.value = cep.replace(/(\d{5})(\d{3})/,'$1-$2');
-    if(cep.length===8) consultarCep(cep);
-    else verificarCampos();
-});
-
-document.querySelectorAll('#cadastroLojaForm input').forEach(input=>{
-    input.addEventListener('input',verificarCampos);
-});
-</script>
-
-<?php ob_end_flush(); ?>
+        cepInput.addEventListener('blur', buscarCep);
+        cepInput.addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g,"");
+            if (v.length > 5) v = v.replace(/^(\d{5})(\d)/, "$1-$2");
+            e.target.value = v;
+        });
+        document.getElementById('senha_cadastro').addEventListener('input', verificarCampos);
+        document.getElementById('confirmar_senha').addEventListener('input', verificarCampos);
+    </script>
+</body>
+</html>

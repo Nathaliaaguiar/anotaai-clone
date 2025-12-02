@@ -1,0 +1,236 @@
+/* ==========================================================================
+   ESTILOS DE PRODUTOS E OPÇÕES (produto.css)
+   ========================================================================== */
+
+:root {
+    --primary-orange: #ff6f00;
+    --primary-hover: #e65100;
+    --text-dark: #2c3e50;
+    --text-gray: #7f8c8d;
+    --bg-white: #ffffff;
+    --border-color: #ddd;
+    --shadow-card: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.admin-crud {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.admin-crud h1, .admin-crud h2 {
+    color: var(--text-dark);
+    border-left: 5px solid var(--primary-orange);
+    padding-left: 15px;
+    margin-bottom: 25px;
+    font-size: 1.8rem;
+}
+
+/* --- CARD DE FORMULÁRIO (Cadastro/Edição) --- */
+.form-produto-card {
+    background: var(--bg-white);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 40px;
+}
+
+/* Grid para campos lado a lado */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Duas colunas */
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--primary-orange);
+    outline: none;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Input de Arquivo (Foto) */
+.form-group input[type="file"] {
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px dashed #ccc;
+}
+
+/* Checkbox (Ativo) */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 35px; /* Alinha com os inputs */
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--primary-orange);
+}
+
+.checkbox-group label {
+    margin: 0;
+    cursor: pointer;
+}
+
+/* Botões Principais */
+.btn-save {
+    background-color: var(--primary-orange);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+    width: 100%; /* Botão largo no mobile */
+}
+
+.btn-save:hover {
+    background-color: var(--primary-hover);
+}
+
+.btn-cancel {
+    display: inline-block;
+    background-color: #95a5a6;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-left: 10px;
+    text-align: center;
+}
+.btn-cancel:hover { background-color: #7f8c8d; }
+
+/* --- TABELA DE PRODUTOS --- */
+.table-responsive {
+    overflow-x: auto;
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+}
+
+.tabela-admin {
+    width: 100%;
+    border-collapse: collapse;
+    white-space: nowrap;
+}
+
+.tabela-admin thead {
+    background-color: var(--text-dark);
+    color: white;
+}
+
+.tabela-admin th, .tabela-admin td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+}
+
+
+
+/* Imagem na tabela */
+.img-thumb {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    background-color: #f0f0f0;
+}
+
+/* Botões de Ação na Tabela */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-edit, .btn-remover, .btn-opcoes {
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: opacity 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-edit { background-color: #3498db; color: white; }
+.btn-opcoes { background-color: #9b59b6; color: white; } /* Roxo para opções */
+.btn-remover { background-color: #e74c3c; color: white; }
+
+.btn-edit:hover, .btn-opcoes:hover, .btn-remover:hover { opacity: 0.8; }
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr; /* Uma coluna no celular */
+        gap: 0;
+    }
+    
+    .btn-save, .btn-cancel {
+        width: 100%;
+        margin: 10px 0 0 0;
+        display: block;
+    }
+    
+    .checkbox-group {
+        margin-top: 10px;
+        margin-bottom: 20px;
+    }
+}
+
+/* ==========================================================================
+   AJUSTES PARA CATEGORIAS (Adicione isto ao final do arquivo)
+   ========================================================================== */
+
+/* Formulário mais compacto (Ideal para cadastro simples como Categorias) */
+.form-mini {
+    max-width: 600px; /* Largura limitada para não esticar demais */
+    margin: 0 auto 40px auto; /* Centraliza na tela */
+}
+
+/* Garante que o botão ocupe largura total em forms pequenos */
+.form-mini .btn-save, 
+.form-mini .btn-cancel {
+    width: 100%;
+    margin-bottom: 10px;
+    margin-left: 0;
+}
